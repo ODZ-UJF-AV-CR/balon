@@ -22,7 +22,7 @@ data = {}
 lv_data = {}
 
 NaN = float('nan')
-def isnan(x): return str(x) == 'nan'
+#def isnan(x): return str(x) == 'nan'
 
 def dv(sname):
   if sname in data:
@@ -52,32 +52,59 @@ class GpsPoller(threading.Thread):
     logging.info("GPS poller thread running.")
     global gpsd
     avg_cr = None      # Moving average climb rate
-    avg_over = 30.0    # Average over last half minute
+    avg_over = 10.0    # Average over ten records
+    time_re = re.compile('^(.+)T(.+)Z$')
+
     data['GPS_AvgClimb'] = NaN
+    data['GPS_Climb']=NaN
+
     while self.running:
       #logging.debug("Retrieving GPS data.")
       gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
-      data['GPS_Time']=gpsd.utc
-      if (len(data['GPS_Time']) == 0):
+      data['Epoch'] = time.time()
+      data['GPS_DateTime']=gpsd.utc
+      if (len(data['GPS_DateTime']) == 0):
+        data['GPS_DateTime'] = NaN
+        data['GPS_Date'] = NaN
         data['GPS_Time'] = NaN
+      else:
+        tre = time_re.match(data['GPS_DateTime'])
+        if tre:
+          data['GPS_Date'] = tre.group(1)
+          data['GPS_Time'] = tre.group(2)
+        else:
+          logging.warn('Can not parse: ' + str(data['GPS_DateTime']))
+
       data['GPS_Fix']=gpsd.fix.mode
       data['GPS_Alt']=gpsd.fix.altitude
       data['GPS_Lat']=gpsd.fix.latitude
       data['GPS_Lon']=gpsd.fix.longitude
       data['GPS_Speed']=gpsd.fix.speed
       data['GPS_Track']=gpsd.fix.track
-      data['GPS_Climb']=gpsd.fix.climb
-      # Fake data for climb calc test
-      #data['GPS_Climb']=0.01*random.randint(400,600)
       data['GPS_epx']=gpsd.fix.epx # Position error [m]
       data['GPS_epv']=gpsd.fix.epv # Altitude error [m]
       data['GPS_eps']=gpsd.fix.eps # Speed error [m/s]
 
+      if (data['GPS_Fix'] > 2): 
+        if 'Prev_Alt' in data and 'Prev_Epoch' in data:
+          if data['Epoch'] - data['Prev_Epoch'] > 5.0 :
+            d_alt = data['GPS_Alt'] - data['Prev_Alt']
+            d_t = data['Epoch'] - data['Prev_Epoch']
+            data['GPS_Climb']= d_alt/d_t
+            data['Prev_Epoch'] = time.time()
+            data['Prev_Alt'] = data['GPS_Alt']
+        else:
+          data['Prev_Epoch'] = time.time()
+          data['Prev_Alt'] = data['GPS_Alt']
+      else:
+        data['GPS_Climb'] = NaN
+
       if (data['GPS_Fix'] > 2):
-        if (avg_cr == None):
-          avg_cr = data['GPS_Climb']
-        avg_cr = (avg_cr*(avg_over - 1.0) + data['GPS_Climb'])/avg_over
-        data['GPS_AvgClimb'] = avg_cr  
+        if not math.isnan(data['GPS_Climb']):
+          if (avg_cr == None):
+            avg_cr = data['GPS_Climb']
+          avg_cr = (avg_cr*(avg_over - 1.0) + data['GPS_Climb'])/avg_over
+          data['GPS_AvgClimb'] = avg_cr  
         for k in data.keys():
           lv_data[k] = data[k]  
       #logging.info(self.get_status_string())
