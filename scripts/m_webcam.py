@@ -15,6 +15,8 @@ import threading
 import pygame
 import pygame.camera
 
+import m_sequence
+
 #### Settings #####
 data_dir="/data/balon/"
 imagedir=data_dir+"img/"
@@ -61,7 +63,7 @@ def make_selfie():
         return(2)
 
   # Construct file name
-  savefname=imagedir+('cam%d-' % (device_number))+time.strftime('%F_%T.jpg', time.gmtime())
+  savefname=imagedir+str(m_sequence.get_next_image_fname())
   logging.info("Capturing {0}x{1} frame to {2}.".format(resolutionx,resolutiony,savefname))
   try:
     ensure_dir(savefname)

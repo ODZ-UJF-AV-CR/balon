@@ -36,7 +36,7 @@ def channels_summary(channels):
 #### PCRD poller ####
 class PCRD_poller(threading.Thread):
   # Default data dir
-  data_dir = './'
+  data_dir = '/data/balon/'
   def __init__(self):
       logging.info("PCRD poller thread is initializing.")
       threading.Thread.__init__(self)

@@ -26,9 +26,11 @@ import m_webcam
 import m_cpu
 import m_i2c
 
+import m_reboot
+
 ###################################################################
 # Parts
-pcrd_enabled    = False
+pcrd_enabled    = True
 webcam_enabled  = False
 gsm_enabled     = True
 gps_enabled     = True
@@ -43,7 +45,7 @@ low_power_mode = False
 log_dir=g.data_dir
 
 # Logging
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
                     filename=log_dir+'monitor.log'
                     )
@@ -71,9 +73,9 @@ else:
 
 ###################################################################
 # GSM module 
+m_gsm.radio_on = False
 if gsm_enabled:
   logging.info("Delaying initializing of GSM interface.")
-  m_gsm.radio_on = False
 else:
   logging.warning("GSM interface disabled.")
 
@@ -100,8 +102,17 @@ run_start=time.time()
 last_sos=time.time()
 
 baloon_level='START'
-test_alt = 220
+baloon_start0 = time.time()
+test_alt = 200
 test_cr = 0
+last_message_alt = -1
+
+logging.warn('This is boot nr {0}'.format(m_reboot.get_n_boot_times()))
+m_reboot.append_boot_time()
+
+bootcount = m_reboot.get_n_boot_times()
+if bootcount > 5:
+  bootcount = 5
 
 try:
     with open(g.data_dir+"data_log.csv", "a") as f:
@@ -109,6 +120,7 @@ try:
       
         while True:
             round_start=time.time()
+            #m_reboot.replace_last_boot_time()
 
             # System UTC epoch time
             csv_header = 'Epoch\t'
@@ -126,6 +138,10 @@ try:
                 logging.info(gsmpart.get_status_string())
                 lr = lr + gsmpart.get_record()
               csv_header = csv_header + m_gsm.get_header()
+              if m_gsm.modem_failure:
+                logger.critical('Forcing restart due to modem failure')
+                pcrd.running = False
+                raise(SystemExit)
 
             # CPU Temperature
             if cputemp_enabled:
@@ -217,17 +233,43 @@ try:
                    webcam.start()
             #endof webcam triggers
   
-            if time.time() - run_start > 360 and time.time() - last_sos > 60:
+            if time.time() - run_start > g.failsafe_timeout and time.time() - last_sos > g.sos_interval:
               # If we are in air for so long, just try to connect
               logging.error("Failsafe mode activated, alt: {0}.".format(alt))
               m_gsm.radio_on = True
               if not 'position' in m_gsm.sms_queue:
                 m_gsm.sms_queue.append('position')
-                m_gsm.sms_queue.append('SOS')
-              baloon_mode = 'FAILSAFE'
+                m_gsm.sms_queue.append('SOB! SOB!')
+              baloon_level = 'FAILSAFE'
               last_sos = time.time()
 
-            elif gsm_enabled and gps_enabled:
+            elif time.time() > baloon_start0 + (1+bootcount)*g.morituri_timeout + g.start_timeout:
+              logging.critical('No fix even after {0} s after switch to MORITURI stage, disabling PCRD.'.format(g.morituri_timeout))
+              if not 'position' in m_gsm.sms_queue and not baloon_level == 'SHUTDOWN':
+                m_gsm.sms_queue.append('position')
+                m_gsm.sms_queue.append('GPS timeout - entering SHUTDOWN, no alt info for {0} s'.format((1+bootcount)*g.morituri_timeout + g.start_timeout))
+              baloon_level = 'SHUTDOWN'
+              if pcrd_enabled:
+                try:
+                  pcrd.running = False
+                  logging.info("Requesting PCRD thread to shut down.")
+                  raise(SystemExit)
+                except NameError:
+                  logging.error("PCRD enabled, but not initialized?")     
+              else:
+                raise(SystemExit)
+
+            elif time.time() > baloon_start0 + g.start_timeout and not baloon_level == 'MORITURI':
+               # If we did not get fix even after timeout enable radio.
+               logging.error("Entering MORITURI timeout - enabling radio.")
+               m_gsm.radio_on = True
+               m_gsm.sms_enabled = True
+               if not 'position' in m_gsm.sms_queue:
+                 m_gsm.sms_queue.append('position')
+                 m_gsm.sms_queue.append('MORITURI, no alt for {0} s SHUTDOWN in {1}'.format(g.start_timeout,(1+bootcount)*g.morituri_timeout))
+               baloon_level = 'MORITURI'
+
+            if gsm_enabled and gps_enabled:
               # Height triggers for SMS and modem power
               # Get altitude - either from GPS or from barometric altimeter
               alt = NaN
@@ -235,88 +277,66 @@ try:
 
               if 'GPS_Alt' in m_gps.data:
                 alt = m_gps.data['GPS_Alt']
-              elif i2c_enabled and 'Altimet_Alt' in m_i2c.data:
-                alt = m_i2c.data['Altimet_Alt']
+              #elif i2c_enabled and 'Altimet_Alt' in m_i2c.data:
+              #  alt = m_i2c.data['Altimet_Alt']
               else:
                 alt = NaN
               
               if 'GPS_AvgClimb' in m_gps.data:
                 cr = m_gps.data['GPS_AvgClimb']
-              elif i2c_enabled and 'Altimet_Climb' in m_i2c.data:
-                cr = m_i2c.data['Altimet_Climb'] 
+              #elif i2c_enabled and 'Altimet_Climb' in m_i2c.data:
+              #  cr = m_i2c.data['Altimet_Climb'] 
               else:
                 cr = NaN
 
               ### ---- TESTING
-              if (test_alt > 350):
-                test_cr = -1.1 * test_cr
-              elif test_cr == 0 and time.time() - run_start > 20: 
-                test_cr = 7.0
-              elif test_alt < 250 and test_cr < 0:
-                test_cr = 0.005
+              if False:
+                print '-------------------------- TEST RUN -----------------------------'
+                if (test_alt > 350):
+                  test_cr = -1.1 * test_cr
+                elif test_cr == 0 and time.time() - run_start > 20: 
+                  test_cr = 7.0
+                elif test_alt < 210 and test_cr < 0:
+                  test_cr = 0.005
               
-              test_alt += test_cr
+                test_alt += test_cr
 
-              cr = test_cr
-              alt = test_alt
+                cr = test_cr
+                alt = test_alt
 
-              m_gsm.test_alt = test_alt
-              m_gsm.test_cr = test_cr
+                m_gsm.test_alt = test_alt
+                m_gsm.test_cr = test_cr
               ### ____ TESTING
-              
-              if not math.isnan(alt) and not math.isnan(cr):
-                #logging.warn('Altitude: {0} CR: {1}'.format(alt, cr))
-                if cr > 0.5:
-                  logging.warn(">>>> Ascending: {0} m {1} m/s".format(alt, cr))
-                  if alt < 279:
-                    # ODZ
-                    logging.error("Radio on and reporting position, alt: {0}.".format(alt))
-                    m_gsm.radio_on = True
-                    if not 'position' in m_gsm.sms_queue and not baloon_level == 'A1':
-                      m_gsm.sms_queue.append('position')
-                      m_gsm.sms_queue.append('Stage transition {0} to A1.'.format(baloon_level))
-                    baloon_level='A1'
-                  elif 279 <= alt < 300:
-                    # Radio off, PCRD measuring
-                    m_gsm.radio_on = False
-                    baloon_level='A2'
-                  elif 300 <= alt < 330:
-                    # Send status
-                    logging.error("Radio on and sending SMS messages: {0}.".format(alt))
-                    m_gsm.radio_on = True
-                    if not 'position' in m_gsm.sms_queue and not baloon_level == 'A3':
-                      m_gsm.sms_queue.append('position')
-                      m_gsm.sms_queue.append('Stage transition {0} to A3.'.format(baloon_level))
-                    baloon_level='A3'
-                  elif 330 < alt:
-                    # Radio off  
-                    logging.error("Radio should be off: alt {0}.".format(alt))
-                    m_gsm.radio_on = False
-                    baloon_level='A4'
-                  else:
-                    logging.error("Ascending, but altitude makes no sense {0}.".format(alt))
-                elif cr < -0.5:
-                  logging.warn(">>>> Descending: {0} m {1} m/s".format(alt, cr))
-                  # Just set modem to on and send position every minute
+
+             
+              # Decide if an SMS has to be sent.  
+              if not math.isnan(alt) and alt > 10:
+                baloon_start0 = time.time() 
+
+                if alt > g.alt_threshold + g.alt_hyst:
+                  # Radio should be off
+                  m_gsm.radio_on = False
+                  baloon_level = 'HIGH'
+                elif alt < g.alt_threshold - g.alt_hyst:
                   m_gsm.radio_on = True
-                  if not 'position' in m_gsm.sms_queue and not baloon_level == 'D1':
+                  if not 'position' in m_gsm.sms_queue and not baloon_level == 'LOW':
                     m_gsm.sms_queue.append('position')
-                    m_gsm.sms_queue.append('Stage transition {0} to D1.'.format(baloon_level))
-                  baloon_level = 'D1'
+                    m_gsm.sms_queue.append('Stage transition {0} to LOW.'.format(baloon_level))
+                  baloon_level = 'LOW'
+                elif not baloon_level == 'LOW' and not baloon_level == 'HIGH':
+                  m_gsm.radio_on = True
+                  if not 'position' in m_gsm.sms_queue:
+                    m_gsm.sms_queue.append('position')
+                    m_gsm.sms_queue.append('Stage transition {0} to LOW.'.format(baloon_level))
+                  baloon_level = 'LOW'
                 else:
-                  logging.warn(">>>> Stable altitude: {0} {1} m/s".format(alt, cr))
-                  # Modem on
-                  m_gsm.radio_on = True
-                  if not 'position' in m_gsm.sms_queue and not baloon_level == 'GND':
-                    m_gsm.sms_queue.append('position')
-                    m_gsm.sms_queue.append('Stage transition {0} to GND.'.format(baloon_level))
-                  if baloon_level == 'D1':
-                    m_gsm.sms_queue.append('The eagle has landed.')
-                  baloon_level = 'GND'
-              elif not math.isnan(alt):
-                logging.warn('Altitude: {0} but no climb rate.'.format(alt))
+                  logging.error('Monkey bussiness!')
+
+                if math.fabs(last_message_alt - alt > g.alt_step):
+                  m_gsm.sms_queue.append('position')
+                  last_message_alt = alt
               else:
-                logging.warn('No altitude nor climb rate data.')
+                logging.warn('No altitude data.')
 
               logging.warn('Baloon mode: {0}, radio {1}.'.format(baloon_level, m_gsm.radio_on))
               if m_gsm.radio_on:
@@ -329,10 +349,12 @@ try:
                     logging.warn('(Re)starting modem thread.')
                     gsmpart = m_gsm.ModemHandler()
                     gsmpart.start()
+                    time.sleep(3)
                 except:
                   logging.warn('Starting modem thread.')
                   gsmpart = m_gsm.ModemHandler()
                   gsmpart.start()
+                  time.sleep(3)
               else:
                 try:
                   if gsmpart.isAlive():

@@ -79,7 +79,7 @@ class GpsPoller(threading.Thread):
       data['GPS_Alt']=gpsd.fix.altitude
       data['GPS_Lat']=gpsd.fix.latitude
       data['GPS_Lon']=gpsd.fix.longitude
-      data['GPS_Speed']=gpsd.fix.speed
+      data['GPS_Speed']=0.514444*gpsd.fix.speed
       data['GPS_Track']=gpsd.fix.track
       data['GPS_epx']=gpsd.fix.epx # Position error [m]
       data['GPS_epv']=gpsd.fix.epv # Altitude error [m]

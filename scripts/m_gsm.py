@@ -26,6 +26,8 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 
 modem=None
 ppp_requested = False
+sms_enabled = True
+modem_failure = False
 beat = 0
 
 # TESTING 
@@ -98,7 +100,10 @@ def send_position_via_sms(destination):
        logging.warn('SMS text length {0}'.format(len(smstext)))
        logging.warn('SMS: {0}'.format(smstext))
 
-       sms = modem.sendSms(destination, smstext, waitForDeliveryReport=False)
+       if sms_enabled:
+         sms = modem.sendSms(destination, smstext, waitForDeliveryReport=False)
+       else:
+         logging.warn('SMS dispatch disabled.')
     except TimeoutException:
        logging.warn('Failed to send message to {0}: the send operation timed out'.format(destination))
     else:
@@ -152,10 +157,16 @@ def handleSms(sms):
   global sms_queue
   logging.info('SMS From {0} at {1}:{2}'.format(sms.number, sms.time, sms.text))
   if sms.text.lower() == 'pos':
-    logging.info('SMS: Position request')
+    logging.warn('SMS: Position request')
     sms_queue.append('position')
+  elif sms.text.lower() == 'smsoff':
+    logging.warn('SMS messaging OFF')
+    sms_enabled = False
+  elif sms.text.lower() == 'smson':
+    logging.warn('SMS messaging ON')
+    sms_enabled = False
   elif sms.text.lower() == 'ppp':
-    logging.info('SMS: GSM uplink requested')
+    logging.warn('SMS: GSM uplink requested')
     sms_queue.append('Activating PPP uplink')
     ppp_requested = True
   else:
@@ -190,6 +201,8 @@ class ModemHandler(threading.Thread):
     self.do_shutdown = True
 
   def get_status_string(self):
+    if modem_failure:
+      return("GSM: FAIL ")
     if self.signalStrength < 100:
       return("GSM: %d @ %s Cell: %s " % (self.signalStrength,self.networkName, self.cellInfo))
     else:
@@ -210,6 +223,7 @@ class ModemHandler(threading.Thread):
     global ppp_requested
     global sms_queue
     global beat
+    global modem_failure
 
     rxListenLength = 5
     init_count = 0
@@ -217,6 +231,11 @@ class ModemHandler(threading.Thread):
     while self.running:
       beat += 1
       while self.running and not ppp_requested and init_count > -1:
+        if (init_count > 10):
+          # Let's exit after 10 fails 
+          self.running = False
+          modem_failure = True
+          return(1)
         try:
           init_count = init_count + 1
           modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall, smsReceivedCallbackFunc=handleSms)
@@ -256,18 +275,19 @@ class ModemHandler(threading.Thread):
           #time.sleep(rxListenLength)
           if (self.signalStrength > 5):
             sent_position = 0
-            while (len(sms_queue) > 0):
-              text=sms_queue.pop()
-              if (text == 'position') and sent_position:
-                logging.info('Not resending position in the same interval')
-              elif (text == 'position'):
-                send_position_via_sms(default_destination)  
-                sent_position = 1
-              else:
-                try:
-                  modem.sendSms(default_destination, text, waitForDeliveryReport=False)
-                except (CommandError, TimeoutException):
-                  sms_queue.append(text)
+            if sms_enabled: 
+              while (len(sms_queue) > 0):
+                text=sms_queue.pop()
+                if (text == 'position') and sent_position:
+                  logging.info('Not resending position in the same interval')
+                elif (text == 'position'):
+                  send_position_via_sms(default_destination)  
+                  sent_position = 1
+                else:
+                  try:
+                    modem.sendSms(default_destination, text, waitForDeliveryReport=False)
+                  except (CommandError, TimeoutException):
+                    sms_queue.append(text)
           else:
             logging.info('Waiting for better network coverage')
 
@@ -290,18 +310,19 @@ class ModemHandler(threading.Thread):
         try:
           self.signalStrength = 101
           logging.info('Launching PPP session.') 
-          while (len(sms_queue) > 0):
-            logging.info('==== Sending PPP activation SMS =====')
-            text=sms_queue.pop()
-            try:
-              modem.sendSms(default_destination, text, waitForDeliveryReport=False)
-              time.sleep(1)
-            except (CommandError, TimeoutException):
-              sms_queue.append(text)
+          if sms_enabled:
+            while (len(sms_queue) > 0):
+              logging.info('==== Sending PPP activation SMS =====')
+              text=sms_queue.pop()
+              try:
+                modem.sendSms(default_destination, text, waitForDeliveryReport=False)
+                time.sleep(1)
+              except (CommandError, TimeoutException):
+                sms_queue.append(text)
           #waitForNetworkCoverage()
           modem.close()
           logging.info("Modem interface closed.")
-          rc = subprocess.check_output(['/usr/bin/timeout','360','/usr/bin/pon'], stderr=subprocess.STDOUT)
+          rc = subprocess.check_output(['/usr/bin/timeout','250','/usr/bin/pon'], stderr=subprocess.STDOUT)
           logging.info('PPP ended: %s' % s)
         except subprocess.CalledProcessError as e:
           logging.info('PPP ended: %s' % e)
@@ -314,7 +335,7 @@ class ModemHandler(threading.Thread):
 #### main ####
 if __name__ == '__main__':
   # Logging
-  logging.basicConfig(level=logging.DEBUG,
+  logging.basicConfig(level=logging.INFO,
     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
     )
   try:
@@ -327,23 +348,24 @@ if __name__ == '__main__':
     gsmpart = ModemHandler()
     gsmpart.start()
     while gsmpart.running:
+      #sms_queue.append('position')
       # GSM module data
       logging.info(gsmpart.get_status_string())
       #i2c = m_i2c.get_i2c_data()
       time.sleep(10)
-      logging.info(gsmpart.get_status_string())
-      time.sleep(10)
-      logging.info(gsmpart.get_status_string())
-      time.sleep(10)
-      gsmpart.shutdown()
-      while gsmpart.isAlive():
-        print "waiting for modem shutdown"
-        time.sleep(1)
-      print "Modem radio disabled and modem is down."
-      time.sleep(10)
-      
-      gsmpart = ModemHandler()
-      gsmpart.start()
+
+    logging.info(gsmpart.get_status_string())
+    time.sleep(10)
+
+    gsmpart.shutdown()
+    while gsmpart.isAlive():
+      print "waiting for modem shutdown"
+      time.sleep(1)
+    print "Modem radio disabled and modem is down."
+    time.sleep(10)
+    
+    gsmpart = ModemHandler()
+    gsmpart.start()
 
     print "GSM part finished."
     raise(SystemExit)
