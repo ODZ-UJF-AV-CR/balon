@@ -136,7 +136,7 @@ def get_i2c_data():
     logging.error('Altimet data unavailable %s' % e)
     data.pop('Prev_Alt', None)
 
-  csv_header = csv_header + 'T_Altimet\tPressure\tAlt_Alt'
+  csv_header = csv_header + 'T_Altimet\tPressure\tAlt_Alt\t'
   lr=lr+("%.3f\t%d\t%.1f\t" % (dv('Altimet_Temp'), dv('Altimet_Press'), dv('Altimet_Alt')))
 
   # SHT sensor  
