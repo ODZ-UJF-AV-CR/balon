@@ -25,8 +25,10 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 
 modem=None
 ppp_requested = False
+beat = 0
 
-sms_queue = ['position']
+sms_queue = []
+#'position']
 
 # GSM module #
 default_destination = g.default_destination
@@ -147,6 +149,7 @@ class ModemHandler(threading.Thread):
     self.networkName = "none"
     self.signalStrength = -1
     self.cellInfo = "none"
+    self.do_shutdown = False
  
   def modemPowerCycle(self):
     # Should reset the modem using hardware pin
@@ -154,6 +157,9 @@ class ModemHandler(threading.Thread):
     writepins('0')
     time.sleep(2)
     writepins('1') 
+
+  def shutdown(self):
+    self.do_shutdown = True
 
   def get_status_string(self):
     if self.signalStrength < 100:
@@ -172,23 +178,27 @@ class ModemHandler(threading.Thread):
     #exportpins()
     #writepins('1')
     
-    logging.info("Modem thread running")
+    logging.info("Modem thread running.")
+
     global modem
     global ppp_requested
     global sms_queue
+    global beat
 
     rxListenLength = 5
     init_count = 0
     
     while self.running:
+      beat += 1
       while self.running and not ppp_requested and init_count > -1:
         try:
           init_count = init_count + 1
           modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall, smsReceivedCallbackFunc=handleSms)
           logging.info("Initializing modem, try {0}.".format(init_count))
           modem.connect(PIN)
+          modem.write('AT+CFUN=1') 
           init_count = -1
-        except (OSError, TimeoutException):
+        except (OSError, TimeoutException,CommandError):
           # OSError means pppd is likely running
           logging.error("Failed to initialize the GSM module.")
           try:
@@ -230,7 +240,15 @@ class ModemHandler(threading.Thread):
                   sms_queue.append(text)
           else:
             logging.info('Waiting for better network coverage')
+
           modem.rxThread.join(rxListenLength) 
+          
+          if self.do_shutdown:
+            logging.warn('Disabling radio RX/TX.')
+            modem.write('AT+CFUN=0') 
+            self.running = False
+            modem.close()
+
         except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
           logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
           modem.close()
@@ -238,7 +256,7 @@ class ModemHandler(threading.Thread):
           init_count = 0
 
       # If PPP was requested, now it's the time
-      if ppp_requested and self.signalStrength > 5 and init_count < 0:
+      if self.running and ppp_requested and self.signalStrength > 5 and init_count < 0:
         try:
           self.signalStrength = 101
           logging.info('Launching PPP session.') 
@@ -266,7 +284,7 @@ class ModemHandler(threading.Thread):
 #### main ####
 if __name__ == '__main__':
   # Logging
-  logging.basicConfig(level=logging.INFO,
+  logging.basicConfig(level=logging.DEBUG,
     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
     )
   try:
@@ -281,9 +299,24 @@ if __name__ == '__main__':
     while gsmpart.running:
       # GSM module data
       logging.info(gsmpart.get_status_string())
-      i2c = m_i2c.get_i2c_data()
-
+      #i2c = m_i2c.get_i2c_data()
       time.sleep(10)
+      logging.info(gsmpart.get_status_string())
+      time.sleep(10)
+      logging.info(gsmpart.get_status_string())
+      time.sleep(10)
+      gsmpart.shutdown()
+      while gsmpart.isAlive():
+        print "waiting for modem shutdown"
+        time.sleep(1)
+      print "Modem radio disabled and modem is down."
+      time.sleep(10)
+      
+      gsmpart = ModemHandler()
+      gsmpart.start()
+
+    print "GSM part finished."
+    raise(SystemExit)
 
 #      time.sleep(10)
 #      ppp_requested = True
