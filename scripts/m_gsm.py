@@ -199,7 +199,7 @@ class ModemHandler(threading.Thread):
           #self.modemPowerCycle()
 
       logging.info('Waiting for incoming calls...')
-      while self.running and not ppp_requested:
+      while self.running and not ppp_requested and init_count < 0:
         try:
           #waitForNetworkCoverage()
           self.signalStrength = modem.signalStrength
@@ -233,6 +233,7 @@ class ModemHandler(threading.Thread):
           modem.rxThread.join(rxListenLength) 
         except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
           logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
+          modem.close()
           time.sleep(5)
           init_count = 0
 
