@@ -31,7 +31,7 @@ import m_reboot
 ###################################################################
 # Parts
 pcrd_enabled    = True
-webcam_enabled  = False
+webcam_enabled  = True
 gsm_enabled     = True
 gps_enabled     = True
 cputemp_enabled = True
@@ -313,11 +313,11 @@ try:
               if not math.isnan(alt) and alt > 10:
                 baloon_start0 = time.time() 
 
-                if alt > g.alt_threshold + g.alt_hyst:
+                if alt > (g.alt_threshold + g.alt_hyst):
                   # Radio should be off
                   m_gsm.radio_on = False
                   baloon_level = 'HIGH'
-                elif alt < g.alt_threshold - g.alt_hyst:
+                elif alt < (g.alt_threshold - g.alt_hyst):
                   m_gsm.radio_on = True
                   if not 'position' in m_gsm.sms_queue and not baloon_level == 'LOW':
                     m_gsm.sms_queue.append('position')
@@ -332,9 +332,11 @@ try:
                 else:
                   logging.error('Monkey bussiness!')
 
-                if math.fabs(last_message_alt - alt > g.alt_step):
+                if math.fabs(last_message_alt - alt) > g.alt_step:
                   m_gsm.sms_queue.append('position')
                   last_message_alt = alt
+                else:
+                  logging.warn('No alt message as {0} {1} {2}'.format(last_message_alt,alt,g.alt_step))
               else:
                 logging.warn('No altitude data.')
 

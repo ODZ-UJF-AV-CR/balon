@@ -11,7 +11,7 @@ round_beat = 10
 #U_lpm = [8350, 8430] # Threshold to enter and exit the low power mode, in mV
 
 # Flight thresholds:
-U_lpm = [7000,7300]
+U_lpm = [7000,7200]
 
 # Modem
 default_destination = "+420777642401"
@@ -19,14 +19,19 @@ default_destination = "+420777642401"
 #default_destination = "+420775268014"
 
 # Testing, lower edge of interval
-alt_threshold = 280
-alt_hyst = 5
+alt_threshold = 7000
+alt_hyst = 1000
 
-alt_step = 20
+#alt_threshold = 260
+#alt_hyst = 5
+
+alt_step = 300
+#print "FAKE alt step"
+#alt_step = 20
 
 # Start mode
-start_timeout = 30
-morituri_timeout = 30
+start_timeout = 300
+morituri_timeout = 300
 
 # FAILSAFE MODE
 failsafe_timeout = 7200  # s

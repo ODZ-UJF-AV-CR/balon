@@ -63,7 +63,7 @@ def make_selfie():
         return(2)
 
   # Construct file name
-  savefname=imagedir+str(m_sequence.get_next_image_fname())
+  savefname=str(m_sequence.get_next_image_fname())
   logging.info("Capturing {0}x{1} frame to {2}.".format(resolutionx,resolutiony,savefname))
   try:
     ensure_dir(savefname)
