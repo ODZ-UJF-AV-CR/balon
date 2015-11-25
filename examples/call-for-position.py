@@ -53,7 +53,7 @@ def handleIncomingCall(call):
            while (gpsd.fix.mode < 2) and (clock() - zerotime < timetowait):
               sleep(1) #set to whatever
 
-           smstext= "{0} {1} http://www.google.com/maps/place/{2},{3}".format(gpsd.utc, gpsd.fix.mode, gpsd.fix.latitude,gpsd.fix.longitude)
+           smstext= "{0} {1} alt:{2}m http://www.google.com/maps/place/{3},{4}".format(gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
            sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
         except TimeoutException:
            logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
