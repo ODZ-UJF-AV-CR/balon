@@ -15,7 +15,9 @@ from time import *
 import time
 import threading
 
-logging.basicConfig(level=logging.WARNING) 
+logging.basicConfig(level=logging.INFO,
+                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
+                    )
 gpsd = None #seting the global variable
 
 from pymlab import config
@@ -23,6 +25,7 @@ from pymlab import config
 #### GPS Poller #####################################################
 class GpsPoller(threading.Thread):
   def __init__(self):
+    logging.info("Starting GPS poller thread")
     threading.Thread.__init__(self)
     global gpsd #bring it in scope
     gpsd = gps(mode=WATCH_ENABLE) #starting the stream of info
@@ -30,6 +33,7 @@ class GpsPoller(threading.Thread):
     self.running = True #setting the thread running to true
 
   def run(self):
+    logging.info("GPS poller thread running")
     global gpsd
     while gpsp.running:
       gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
@@ -87,8 +91,9 @@ try:
         while True:
             # System UTC epoch time
             lr="%d\t" % time.time()
-
+ 
             # GPS data 
+            logging.debug("Retrieving: GPS")
             zerotime=time.clock()
             while (gpsd.fix.mode < 2) and (time.clock() - zerotime < 10.0):
                   time.sleep(0.1) #set to whatever
@@ -99,6 +104,7 @@ try:
             lr = lr + ("%s\t%d\t%f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
 
             # CPU Temperature
+            logging.debug("Retrieving: CPU thermal sensor")
             with open("/sys/class/thermal/thermal_zone0/temp") as cputempf:
                 cputemp=cputempf.readline()
                 cputempf.close()
@@ -107,6 +113,7 @@ try:
                 lr=lr+"%.2f\t" % (cputemp)
 
             # Altimet
+            logging.debug("Retrieving: Altimet temperature and pressure")
             altimet.route()
             (t1, p1) = altimet.get_tp()
             sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
@@ -114,6 +121,7 @@ try:
             lr=lr+("%.3f\t%d\t" % (t1, p1))
 
             # SHT sensor	
+            logging.debug("Retrieving: SHT sensor")
             sht_sensor.route()	    	
             temperature = sht_sensor.get_temp()
             humidity = sht_sensor.get_hum()
@@ -121,10 +129,12 @@ try:
             lr=lr+("%.2f\t%.1f\t" % (temperature, humidity))
 
             # Battery sensors
+            logging.debug("Retrieving: Battery sensors")
             guage.route()
             sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
             #print "BatTemp: ", guage.getTemp(), "degC, RemainCapacity =", guage.getRemainingCapacity(), "mAh, cap =", guage.FullChargeCapacity(), "mAh, U =", guage.Voltage(), "mV, I =", guage.AverageCurrent(), "mA, charge =", guage.StateOfCharge(), "%"
             lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
+            logging.debug("Writing to file")
             f.write(lr) 
 	    f.flush()
             sys.stdout.flush()
@@ -133,7 +143,6 @@ except (KeyboardInterrupt, SystemExit):
     sys.stdout.write("Exiting\r\n")
     #f.write("\r\n")
     f.close()
-    cputempf.close()
     gpsp.running = False
     gpsp.join() # wait for the thread to finish what it's doing
     sys.exit(0)
