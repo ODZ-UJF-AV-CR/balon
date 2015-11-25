@@ -93,18 +93,12 @@ try:
             lr="%d\t" % time.time()
  
             # GPS data 
-            logging.debug("Retrieving: GPS")
-            zerotime=time.clock()
-            while (gpsd.fix.mode < 2) and (time.clock() - zerotime < 10.0):
-                  time.sleep(0.1) #set to whatever
-            
-            s=gpsd.utc
-            gpsdatetime=s[:s.find('T')]+' '+s[s.find('T')+1:s.find('.')]
-            sys.stdout.write("GPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsdatetime, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            logging.debug("Retrieving: GPS data")
+            sys.stdout.write("GPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
             lr = lr + ("%s\t%d\t%f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
 
             # CPU Temperature
-            logging.debug("Retrieving: CPU thermal sensor")
+            logging.debug("Retrieving: CPU thermal sensor data")
             with open("/sys/class/thermal/thermal_zone0/temp") as cputempf:
                 cputemp=cputempf.readline()
                 cputempf.close()
@@ -113,7 +107,7 @@ try:
                 lr=lr+"%.2f\t" % (cputemp)
 
             # Altimet
-            logging.debug("Retrieving: Altimet temperature and pressure")
+            logging.debug("Retrieving: Altimet temperature and pressure data")
             altimet.route()
             (t1, p1) = altimet.get_tp()
             sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
@@ -121,7 +115,7 @@ try:
             lr=lr+("%.3f\t%d\t" % (t1, p1))
 
             # SHT sensor	
-            logging.debug("Retrieving: SHT sensor")
+            logging.debug("Retrieving: SHT sensor data")
             sht_sensor.route()	    	
             temperature = sht_sensor.get_temp()
             humidity = sht_sensor.get_hum()
@@ -129,7 +123,7 @@ try:
             lr=lr+("%.2f\t%.1f\t" % (temperature, humidity))
 
             # Battery sensors
-            logging.debug("Retrieving: Battery sensors")
+            logging.debug("Retrieving: Battery sensor data")
             guage.route()
             sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
             #print "BatTemp: ", guage.getTemp(), "degC, RemainCapacity =", guage.getRemainingCapacity(), "mAh, cap =", guage.FullChargeCapacity(), "mAh, U =", guage.Voltage(), "mV, I =", guage.AverageCurrent(), "mA, charge =", guage.StateOfCharge(), "%"
@@ -147,9 +141,6 @@ except (KeyboardInterrupt, SystemExit):
     gpsp.join() # wait for the thread to finish what it's doing
     sys.exit(0)
 
-print "Never get here."
-gpsp.running = False
-gpsp.join() # wait for the thread to finish what it's doing
 
 
 
