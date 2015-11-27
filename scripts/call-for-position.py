@@ -9,7 +9,7 @@ GPS parts reused from Dan Mandle http://dan.mandle.me September 2012, License: G
 import time, logging
 import os
 from gps import *
-from time import *
+#from time import *
 import threading
 import sys
 
@@ -48,7 +48,7 @@ def handleIncomingCall(call):
         #call.hangup() # That's messy, let's not use it.
         try:
            # Get a GPS fix, prepare a string with it
-           zerotime=clock()
+           zerotime=time.clock()
            timetowait=10.0
            while (gpsd.fix.mode < 2) and (clock() - zerotime < timetowait):
               sleep(1) #set to whatever
