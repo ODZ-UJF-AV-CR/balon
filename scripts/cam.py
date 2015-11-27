@@ -81,7 +81,7 @@ class WebCamCapture(threading.Thread):
       if (selfie_time > self.looptime):
         logging.warn("Webcam image capture takes too long: {0} s, can not pad the beats to {1}.".format(selfie_time, self.looptime))
       else:
-        logging.debug("Capture took {0} s. Next beat in {1} s".format(selfie_time, self.looptime-selfie_time))
+        logging.debug("Capture took {0} s. Next beat in {1} s to pad to {2} s.".format(selfie_time, self.looptime-selfie_time, self.looptime))
         time.sleep(self.looptime-selfie_time)
 
     logging.debug("Thread exiting")
