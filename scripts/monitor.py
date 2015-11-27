@@ -15,12 +15,92 @@ from time import *
 import time
 import threading
 
-logging.basicConfig(level=logging.INFO,
+import pygame
+import pygame.camera
+#from pygame.locals import *
+
+logging.basicConfig(level=logging.WARNING,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
 gpsd = None #seting the global variable
 
 from pymlab import config
+
+#### Settings #####
+
+# Webcam #
+webcam_enabled=True
+imagedir="img/"
+video_device="/dev/video0"
+resolutionx=640 # Max 1600
+resolutiony=480 # Max 480
+skipframes=5
+beattime=5
+
+####################################################################
+def make_selfie():
+  logging.debug("Initializing camera at {0} for {1}x{2} px JPEG every {3} s.".format(video_device,resolutionx,resolutiony,beattime))
+  try:
+    cam = pygame.camera.Camera(video_device,(resolutionx,resolutiony))
+    cam.start()
+
+  except SystemError as e:
+    logging.error(e)
+    return(1)
+
+  # Wait for initialization
+  while (not cam.query_image()):
+    time.sleep(0.1)
+
+  # Skip required number of frames
+  if (skipframes > 0):
+    logging.debug("Waiting for image stabilization - skipping {0} frames.".format(skipframes))
+    for i in range(skipframes):
+      try:
+        img = cam.get_image()
+      except pygame.error:
+        logging.error("Error during frame capture: {0}".format(sys.exc_info()[0]))
+        return(2)
+
+  # Construct file name
+  savefname=time.strftime(imagedir+'%F_%T.jpg', time.gmtime())
+  logging.info("Capturing {0}x{1} frame to {2}.".format(resolutionx,resolutiony,savefname))
+  try:
+    ensure_dir(savefname)
+    img = cam.get_image()
+    pygame.image.save(img, savefname)
+    cam.stop()
+  except pygame.error as e:
+    logging.error("Capture failed: {0}".format(e))
+
+####################################################################
+class WebCamCapture(threading.Thread):
+  def __init__(self):
+    logging.debug("WebCam thread initialization")
+    threading.Thread.__init__(self)
+    self.running = True
+    self.name = 'WebCam'
+
+  def run(self):
+    logging.debug("Thread starting")
+    while webcam.running:
+      zerotime=time.time()
+      make_selfie()
+      selfie_time=time.time()-zerotime
+      if (selfie_time > beattime):
+        logging.warn("Webcam image capture takes too long: {0} s, can not pad the beats to {1}.".format(selfie_time, beattime))
+      else:
+        logging.debug("Capture took {0} s. Next beat in {1} s to pad to {2} s.".format(selfie_time, beattime-selfie_time, beattime))
+        time.sleep(beattime-selfie_time)
+
+    logging.debug("Thread exiting")
+
+#### ensure_dir ####
+def ensure_dir(f):
+    d = os.path.dirname(f)
+    if not os.path.exists(d):
+          logging.info("Creating directory: {0}".format(d))
+          os.makedirs(d)
 
 #### GPS Poller #####################################################
 class GpsPoller(threading.Thread):
@@ -78,12 +158,24 @@ sht_sensor = cfg.get_device("sht25")
 guage = cfg.get_device("guage")
 time.sleep(0.5)
 
-# GPS thread initialization
+# GPS thread initialization and startup
 gpsp = GpsPoller() # create the thread
 gpsp.start() # start it up
+
+# Webcam thread initialization and startup
+if webcam_enabled:
+  logging.info("Initializing image capture.")
+  pygame.init()
+  pygame.camera.init()
+  webcam = WebCamCapture()
+  webcam.looptime = beattime
+  webcam.start()
+else:
+  logging.info("Webcam image capture disabled.")
+
 #### Data Logging ###################################################
 
-sys.stdout.write("Data acquisition system started \n")
+sys.stdout.write("# Data acquisition system started \n")
 
 try:
     with open("data_log.csv", "a") as f:
@@ -133,12 +225,16 @@ try:
 	    f.flush()
             sys.stdout.flush()
 
+
 except (KeyboardInterrupt, SystemExit):
     sys.stdout.write("Exiting\r\n")
     #f.write("\r\n")
     f.close()
     gpsp.running = False
-    gpsp.join() # wait for the thread to finish what it's doing
+    if webcam_enabled:
+      webcam.running = False
+      webcam.join() # wait for WebCam thread
+    gpsp.join()   # wait for GPS poller thread
     sys.exit(0)
 
 
