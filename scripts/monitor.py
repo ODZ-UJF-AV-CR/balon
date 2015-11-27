@@ -19,7 +19,12 @@ import pygame
 import pygame.camera
 #from pygame.locals import *
 
-logging.basicConfig(level=logging.WARNING,
+## Modem
+from gsmmodem.modem import GsmModem, SentSms
+from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException
+###
+
+logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
 gpsd = None #seting the global variable
@@ -37,7 +42,12 @@ resolutiony=480 # Max 480
 skipframes=5
 beattime=5
 
+# GSM module #
+PORT = '/dev/ttyACM99'
+BAUDRATE = 9600
+PIN = None # SIM card PIN (if any)
 ####################################################################
+
 def make_selfie():
   logging.debug("Initializing camera at {0} for {1}x{2} px JPEG every {3} s.".format(video_device,resolutionx,resolutiony,beattime))
   try:
@@ -118,6 +128,61 @@ class GpsPoller(threading.Thread):
     while gpsp.running:
       gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
+#### Incoming call handler #########################################
+def handleIncomingCall(call):
+    if call.ringCount == 1:
+        logging.info('Incoming call from: {0}'.format(call.number))
+    elif not (call.number is None):
+        destination=call.number
+        call.hangup() # That's messy, let's not use it.
+        try:
+           # Get a GPS fix, prepare a string with it
+           zerotime=clock()
+           timetowait=10.0
+           while (gpsd.fix.mode < 2) and (clock() - zerotime < timetowait):
+              sleep(1) #set to whatever
+
+           smstext= "{0} {1} alt:{2}m http://www.google.com/maps/place/{3},{4}".format(gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
+           sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
+        except TimeoutException:
+           logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
+        else:
+           if sms.report:
+                logging.info('Message sent{0}'.format(' and delivered OK.' if sms.status == SentSms.DELIVERED else ', but delivery failed.'))
+           else:
+                logging.info('Message sent.')
+    else:
+        logging.info('Call from {0} is ringing...'.format(call.number))
+
+class ModemHandler(threading.Thread):
+  def __init__(self):
+    logging.info("Starting Modem handler thread")
+    threading.Thread.__init__(self)
+    global modem
+    self.running = True #setting the thread running to true
+    self.name = "Modem"
+
+  def run(self):
+    logging.info("Modem thread running")
+    global modem
+    try:
+      modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
+      modem.connect(PIN)
+    except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
+      logging.error("Failed to initialize the GSM module.")
+      exit(1) 
+
+    logging.info('Waiting for incoming calls...')
+    while self.running:
+      try:
+        logging.info("rxThread listening for 10 s")
+        modem.rxThread.join(10) 
+      except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
+        logger.error("rxThread died: {0}".format(sys.exc_info()[0]))
+
+    modem.close()
+    logging.info("Modem closed.")
+
 #### Script Arguments ###############################################
 
 cfg_number = 0
@@ -173,6 +238,11 @@ if webcam_enabled:
 else:
   logging.info("Webcam image capture disabled.")
 
+# GSM call/sms handler
+logging.info("Initializing GSM support.")
+gsmpart = ModemHandler()
+gsmpart.start()
+
 #### Data Logging ###################################################
 
 sys.stdout.write("# Data acquisition system started \n")
@@ -225,18 +295,21 @@ try:
 	    f.flush()
             sys.stdout.flush()
 
-
 except (KeyboardInterrupt, SystemExit):
-    sys.stdout.write("Exiting\r\n")
+    logging.error("Exiting:")
     #f.write("\r\n")
     f.close()
-    gpsp.running = False
-    if webcam_enabled:
+    if gsmpart.running:
+      gsmpart.running = False
+      #gsmpart.join()
+      logging.info("GSM thread asked to shut down.")
+    if webcam.running:
       webcam.running = False
-      webcam.join() # wait for WebCam thread
-    gpsp.join()   # wait for GPS poller thread
+      #webcam.join() # wait for WebCam thread
+      logging.info("Webcam thread asked to shut down.")
+    if gpsp.running:
+      gpsp.running = False
+      #gpsp.join()   # wait for GPS poller thread
+      logging.info("GPS thread asked to shut down.")
     sys.exit(0)
-
-
-
 
