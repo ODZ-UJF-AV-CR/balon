@@ -11,7 +11,7 @@ GPIO_EXPORT_PATH=os.path.normpath('/sys/class/gpio/export')
 
 
 
-def writepins(pin_value):
+def writepin(pin_value):
     pin = open("/sys/class/gpio/gpio204/value","w")
     pin.write(pin_value)
     pin.close()
@@ -35,27 +35,20 @@ spi.open(1, 0) # open spi port 0, device (CS) 1
 try:
     #spi.mode = 2
     #spi.bits_per_word = 8
+    #spi.cshigh = False
+    writepin("1")
     while True:
-        #spi.cshigh = False
-        #spi.cshigh = True
         #resp = spi.readbytes(2)
         #resp = spi.xfer([0xAA,0x55,0xAA,0x55],10000000,0) # transfer one byte
-        for n in range(200):
-            #writepins('1')
-            #writepins('0')
-            #resp = spi.xfer([0xFF,0xFF]) # transfer one byte
-            
-            pin = open(GPIO_PIN_PATH, "w")
-            #resp = spi.xfer([0x00,0x00]) # transfer
+        for n in range(7000):
+            writepin("0")
+            #writepin("0")
+            time.sleep(0.0001)  # cca 250 us
+            pin = open("/sys/class/gpio/gpio204/value","w")
             pin.write("1")
+            resp = spi.readbytes(2)
             pin.close()
-            pin = open(GPIO_PIN_PATH, "w")
-            pin.write("0")
-            pin.close()
-            resp = spi.xfer([0x00,0x00]) # transfer one word
-        #resp = spi.xfer([0xAA,0x55,0xAA,0x55],10000000) # transfer one byte
-        #spi.writebytes([0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,]) # transfer one byte
-        #time.sleep(0.1) # sleep for 0.1 seconds
+        time.sleep(0.1) # sleep for 0.1 seconds
         #end while
 except KeyboardInterrupt: 
     spi.close()
