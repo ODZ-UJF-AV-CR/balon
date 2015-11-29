@@ -36,6 +36,8 @@ from pymlab import config
 data_dir="/data/balon/"
 default_destination = "+420777642401"
 
+round_beat = 10 # Seconds for one round of sensors capture
+
 # Webcam #
 #webcam_enabled=True
 webcam_enabled=False
@@ -282,6 +284,8 @@ logging.info("Initializing GSM support.")
 gsmpart = ModemHandler()
 gsmpart.start()
 
+#### 
+
 #### Data Logging ###################################################
 
 sys.stdout.write("# Data acquisition system started \n")
@@ -290,8 +294,9 @@ sys.stdout.write("# Data acquisition system started \n")
 
 try:
     with open(data_dir+"data_log.csv", "a") as f:
-	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tLatitude\tLongitude\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
+	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
         while True:
+            round_start=time.time()
             # System UTC epoch time
             lr="%d\t" % time.time()
  
@@ -303,6 +308,7 @@ try:
 
             # GSM module data
             sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
+            lr = lr + ("%d\t\%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
 
             # CPU Temperature
             logging.debug("Retrieving: CPU thermal sensor data")
@@ -339,6 +345,9 @@ try:
             f.write(lr) 
 	    f.flush()
             sys.stdout.flush()
+            round_timeleft = round_beat + round_start - time.time()
+            if (round_timeleft > 0):
+              time.sleep(round_timeleft)
 
 except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting:")
