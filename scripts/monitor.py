@@ -25,7 +25,7 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 ###
 
 logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
+                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
 gpsd = None #seting the global variable
 
@@ -45,7 +45,7 @@ beattime=60
 
 # GSM module #
 PORT = '/dev/ttyACM99'
-BAUDRATE = 9600
+BAUDRATE = 115200
 PIN = None # SIM card PIN (if any)
 ####################################################################
 
@@ -166,17 +166,23 @@ class ModemHandler(threading.Thread):
   def run(self):
     logging.info("Modem thread running")
     global modem
-    try:
-      modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
-      modem.connect(PIN)
-    except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
-      logging.error("Failed to initialize the GSM module.")
-      exit(1) 
+    init_count = 0
+    
+    while self.running and init_count > -1:
+      try:
+        init_count = init_count + 1
+        logging.info("Initializing modem, try {}.".format(init_count))
+        modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
+        modem.connect(PIN)
+        init_count = -1
+      except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException) as e:
+        logging.error("Failed to initialize the GSM module: {0}".format(e))
+        modem.close()
 
     logging.info('Waiting for incoming calls...')
     while self.running:
       try:
-        logging.info("rxThread listening for 10 s")
+        logging.debug("rxThread listening for 10 s")
         modem.rxThread.join(10) 
       except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
         logger.error("rxThread died: {0}".format(sys.exc_info()[0]))
@@ -257,7 +263,8 @@ try:
  
             # GPS data 
             logging.debug("Retrieving: GPS data")
-            sys.stdout.write("GPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            #sys.stdout.write("GPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
             lr = lr + ("%s\t%d\t%f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
 
             # CPU Temperature
@@ -304,7 +311,7 @@ except (KeyboardInterrupt, SystemExit):
       gsmpart.running = False
       #gsmpart.join()
       logging.info("GSM thread asked to shut down.")
-    if webcam.running:
+    if webcam_enabled:
       webcam.running = False
       #webcam.join() # wait for WebCam thread
       logging.info("Webcam thread asked to shut down.")
