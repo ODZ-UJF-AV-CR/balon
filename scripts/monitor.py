@@ -139,12 +139,13 @@ def send_position_via_sms(destination):
     logging.info("Will send position via SMS to: {0}.".format(destination))
     try:
        # Get a GPS fix, prepare a string with it
-       zerotime=clock()
-       timetowait=10.0
-       while (gpsd.fix.mode < 2) and (clock() - zerotime < timetowait):
-          sleep(1) #set to whatever
+       if (sensors['GPS_Fix'] < 3):
+         smstext = "{0} GSM: {1}".format(gpsd.utc, sensors['GSM_CellInfo']) 
+       else:
+         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3}".format(gpsd.utc, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
 
-       smstext= "{0} {1} alt:{2}m http://www.google.com/maps/place/{3},{4}".format(gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
+       smstext = smstext + (" BT{0} BCH{1} ".format(sensors['Bat_Temp'], sensors['Bat_Charge']))
+
        sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
     except TimeoutException:
        logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
@@ -194,7 +195,7 @@ class ModemHandler(threading.Thread):
       try:
         init_count = init_count + 1
         modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
-        logging.info("Initializing modem, try {}.".format(init_count))
+        logging.info("Initializing modem, try {0}.".format(init_count))
         modem.connect(PIN)
         init_count = -1
       except TimeoutException as e:
@@ -228,6 +229,7 @@ class ModemHandler(threading.Thread):
 
 cfg_number = 0
 port = 4
+sensors = {}
 
 #### Sensor Configuration ###########################################
 
@@ -292,23 +294,33 @@ sys.stdout.write("# Data acquisition system started \n")
 
 #gpsp.join()
 
+
 try:
     with open(data_dir+"data_log.csv", "a") as f:
 	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
         while True:
             round_start=time.time()
+            sensors['Epoch'] = round_start
             # System UTC epoch time
-            lr="%d\t" % time.time()
+            lr="%d\t" % round_start
  
             # GPS data 
             logging.debug("Retrieving: GPS data")
             sys.stdout.write("\nGPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
             #sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
             lr = lr + ("%s\t%d\t%.1f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            
+            sensors['GPS_Time']=gpsd.utc
+            sensors['GPS_Fix']=gpsd.fix.mode
+            sensors['GPS_Alt']=gpsd.fix.altitude
+            sensors['GPS_Lat']=gpsd.fix.latitude
+            sensors['GPS_Lon']=gpsd.fix.longitude
 
             # GSM module data
             sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
             lr = lr + ("%d\t%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
+            sensors['GSM_Signal'] = gsmpart.signalStrength
+	    sensors['GSM_CellInfo'] = gsmpart.cellInfo
 
             # CPU Temperature
             logging.debug("Retrieving: CPU thermal sensor data")
@@ -318,6 +330,7 @@ try:
                 cputemp=float(cputemp.rstrip())/1000.0
                 sys.stdout.write("CPUTemp %.1f C " % cputemp)
                 lr=lr+"%.2f\t" % (cputemp)
+                sensors['CPU_Temp'] = cputemp
 
             # Altimet
             logging.debug("Retrieving: Altimet temperature and pressure data")
@@ -327,6 +340,8 @@ try:
               logging.error('Altimet malfunction - no data from pressure indicator.')
             sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
             lr=lr+("%.3f\t%d\t" % (t1, p1))
+            sensors['Altimet_Temp'] = t1
+            sensors['Altimet_Press'] = p1
 
             # SHT sensor	
             logging.debug("Retrieving: SHT sensor data")
@@ -335,13 +350,24 @@ try:
             humidity = sht_sensor.get_hum()
             sys.stdout.write("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
             lr=lr+("%.2f\t%.1f\t" % (temperature, humidity))
+            sensors['SHT_Temp'] = temperature
+            sensors['SHT_Hum'] = humidity
 
             # Battery sensors
             logging.debug("Retrieving: Battery sensor data")
             guage.route()
+            sensors['Bat_Temp'] = guage.getTemp()
+            sensors['Bat_RemCap'] = guage.getRemainingCapacity()
+            sensors['Bat_FullChargeCapacity'] = guage.FullChargeCapacity()
+            sensors['Bat_V'] = guage.Voltage()
+            sensors['Bat_AvgI'] = guage.AverageCurrent()
+            sensors['Bat_Charge'] = guage.StateOfCharge()
+
             sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
             #print "BatTemp: ", guage.getTemp(), "degC, RemainCapacity =", guage.getRemainingCapacity(), "mAh, cap =", guage.FullChargeCapacity(), "mAh, U =", guage.Voltage(), "mV, I =", guage.AverageCurrent(), "mA, charge =", guage.StateOfCharge(), "%"
             lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
+
+            sensors['Ready']=True
             logging.debug("Writing to file")
             f.write(lr) 
 	    f.flush()
