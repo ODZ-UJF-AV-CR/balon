@@ -180,9 +180,9 @@ class ModemHandler(threading.Thread):
     global modem
     self.running = True #setting the thread running to true
     self.name = "Modem"
-    self.networkName = "nan"
+    self.networkName = "none"
     self.signalStrength = -1
-    self.cellInfo = "nan"
+    self.cellInfo = "none"
 
   def run(self):
     logging.info("Modem thread running")
@@ -304,11 +304,11 @@ try:
             logging.debug("Retrieving: GPS data")
             sys.stdout.write("\nGPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
             #sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
-            lr = lr + ("%s\t%d\t%f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            lr = lr + ("%s\t%d\t%.1f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
 
             # GSM module data
             sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
-            lr = lr + ("%d\t\%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
+            lr = lr + ("%d\t%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
 
             # CPU Temperature
             logging.debug("Retrieving: CPU thermal sensor data")
@@ -323,8 +323,9 @@ try:
             logging.debug("Retrieving: Altimet temperature and pressure data")
             altimet.route()
             (t1, p1) = altimet.get_tp()
+            if (p1 == 0):
+              logging.error('Altimet malfunction - no data from pressure indicator.')
             sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
-            time.sleep(0.5)
             lr=lr+("%.3f\t%d\t" % (t1, p1))
 
             # SHT sensor	
