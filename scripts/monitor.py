@@ -32,15 +32,16 @@ gpsd = None #seting the global variable
 from pymlab import config
 
 #### Settings #####
+data_dir="/data/balon/"
 
 # Webcam #
 webcam_enabled=True
-imagedir="img/"
+imagedir=data_dir+"img/"
 video_device="/dev/video0"
 resolutionx=640 # Max 1600
 resolutiony=480 # Max 480
 skipframes=5
-beattime=5
+beattime=60
 
 # GSM module #
 PORT = '/dev/ttyACM99'
@@ -248,7 +249,7 @@ gsmpart.start()
 sys.stdout.write("# Data acquisition system started \n")
 
 try:
-    with open("data_log.csv", "a") as f:
+    with open(data_dir+"data_log.csv", "a") as f:
 	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tLatitude\tLongitude\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
         while True:
             # System UTC epoch time
