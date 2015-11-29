@@ -8,6 +8,7 @@ import time
 import datetime
 import sys
 import logging 
+import re
 
 import os
 from gps import *
@@ -33,9 +34,11 @@ from pymlab import config
 
 #### Settings #####
 data_dir="/data/balon/"
+default_destination = "+420777642401"
 
 # Webcam #
-webcam_enabled=True
+#webcam_enabled=True
+webcam_enabled=False
 imagedir=data_dir+"img/"
 video_device="/dev/video0"
 resolutionx=640 # Max 1600
@@ -45,7 +48,7 @@ beattime=60
 
 # GSM module #
 PORT = '/dev/ttyACM99'
-BAUDRATE = 115200
+BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
 PIN = None # SIM card PIN (if any)
 ####################################################################
 
@@ -129,63 +132,92 @@ class GpsPoller(threading.Thread):
     while gpsp.running:
       gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
+#### Send position in a SMS ########################################
+def send_position_via_sms(destination):
+    logging.info("Will send position via SMS to: {0}.".format(destination))
+    try:
+       # Get a GPS fix, prepare a string with it
+       zerotime=clock()
+       timetowait=10.0
+       while (gpsd.fix.mode < 2) and (clock() - zerotime < timetowait):
+          sleep(1) #set to whatever
+
+       smstext= "{0} {1} alt:{2}m http://www.google.com/maps/place/{3},{4}".format(gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
+       sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
+    except TimeoutException:
+       logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
+    else:
+       if sms.report:
+            logging.info('Message sent{0}'.format(' and delivered OK.' if sms.status == SentSms.DELIVERED else ', but delivery failed.'))
+       else:
+            logging.info('Message sent.')
+
+
 #### Incoming call handler #########################################
 def handleIncomingCall(call):
     if call.ringCount == 1:
-        logging.info('Incoming call from: {0}'.format(call.number))
-    elif not (call.number is None):
+        logging.info('New incoming call, waiting for CLIP.'.format(call.number))
+    elif call.ringCount <= 3 and not (call.number is None):
+        logging.info('Got CLIP, Will send position to {0}.'.format(call.number))
         destination=call.number
-        call.hangup() # That's messy, let's not use it.
-        try:
-           # Get a GPS fix, prepare a string with it
-           zerotime=clock()
-           timetowait=10.0
-           while (gpsd.fix.mode < 2) and (clock() - zerotime < timetowait):
-              sleep(1) #set to whatever
-
-           smstext= "{0} {1} alt:{2}m http://www.google.com/maps/place/{3},{4}".format(gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
-           sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
-        except TimeoutException:
-           logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
-        else:
-           if sms.report:
-                logging.info('Message sent{0}'.format(' and delivered OK.' if sms.status == SentSms.DELIVERED else ', but delivery failed.'))
-           else:
-                logging.info('Message sent.')
+        call.hangup()
+        send_position_via_sms(destination)
+    elif call.ringCount > 3:
+        call.hangup()
+        send_position_via_sms(default_destination)
     else:
-        logging.info('Call from {0} is ringing...'.format(call.number))
+        logging.info('Call is ringing and we still have no CLIP.')
+         
 
 class ModemHandler(threading.Thread):
+  # +CGED: MCC:230, MNC:  3, LAC:878c, CI:2a95,
+  CGED_REGEX = re.compile(r'^\+CGED:\s*MCC:([^,]+),\s*MNC:\s*([^,]+),\s*LAC:\s*([^,]+),\s*CI:\s*([^,]+),.*')
   def __init__(self):
     logging.info("Starting Modem handler thread")
     threading.Thread.__init__(self)
     global modem
     self.running = True #setting the thread running to true
     self.name = "Modem"
+    self.networkName = "nan"
+    self.signalStrength = -1
+    self.cellInfo = "nan"
 
   def run(self):
     logging.info("Modem thread running")
     global modem
+    rxListenLength = 10
     init_count = 0
     
     while self.running and init_count > -1:
       try:
         init_count = init_count + 1
-        logging.info("Initializing modem, try {}.".format(init_count))
         modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
+        logging.info("Initializing modem, try {}.".format(init_count))
         modem.connect(PIN)
         init_count = -1
-      except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException) as e:
-        logging.error("Failed to initialize the GSM module: {0}".format(e))
+      except TimeoutException as e:
+        logging.critical("Failed to initialize the GSM module: {0}", e)
         modem.close()
 
     logging.info('Waiting for incoming calls...')
     while self.running:
       try:
-        logging.debug("rxThread listening for 10 s")
-        modem.rxThread.join(10) 
+        #waitForNetworkCoverage()
+        self.signalStrength = modem.signalStrength
+        self.networkName = modem.networkName
+        serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
+        if serving_cell:
+          mcc=serving_cell.group(1)
+          mnc=serving_cell.group(2)
+          lac=serving_cell.group(3)
+          ci=serving_cell.group(4)
+          self.cellInfo="{0}/{1}/{2}/{3}".format(mcc, mnc, lac, ci)
+
+        # Comms are handled elsewhere so we could eventually just sleep, waiting
+        #time.sleep(rxListenLength)
+        modem.rxThread.join(rxListenLength) 
       except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
-        logger.error("rxThread died: {0}".format(sys.exc_info()[0]))
+        logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
 
     modem.close()
     logging.info("Modem closed.")
@@ -254,6 +286,8 @@ gsmpart.start()
 
 sys.stdout.write("# Data acquisition system started \n")
 
+#gpsp.join()
+
 try:
     with open(data_dir+"data_log.csv", "a") as f:
 	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tLatitude\tLongitude\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
@@ -263,9 +297,12 @@ try:
  
             # GPS data 
             logging.debug("Retrieving: GPS data")
-            #sys.stdout.write("GPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
-            sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
+            sys.stdout.write("\nGPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            #sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
             lr = lr + ("%s\t%d\t%f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+
+            # GSM module data
+            sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
 
             # CPU Temperature
             logging.debug("Retrieving: CPU thermal sensor data")
