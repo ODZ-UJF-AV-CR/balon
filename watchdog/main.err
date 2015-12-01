@@ -1,3 +1,0 @@
->>> Warning 216 "main.c" Line 288(2,3): Interrupts disabled during call to prevent re-entrancy:  (@delay_ms1)
-      Memory usage:   ROM=6%      RAM=5% - 6%
-      0 Errors,  1 Warnings.
