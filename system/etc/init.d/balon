@@ -1,0 +1,62 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          balon
+# Required-Start:    $gpsd $syslog $network $remote_fs
+# Required-Stop:
+# Default-Start:     2
+# Default-Stop:      
+# Short-Description: balon monitoring script
+# Description:       earth health monitoring
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+PROGRAM=/home/odroid/scripts/monitor.py
+
+PIDFILE=~odroid/monitor.pid
+
+GPSTIMESCRIPT=~odroid/scripts/set-time-from-gps.sh
+
+test -x $PROGRAM || exit 0
+
+VERBOSE=yes
+case "$1" in
+  start)
+        log_begin_msg "Setting time from GPS fix if available"
+        if [ ! -x $GPSTIMESCRIPT ] ; then 
+          echo "$GPSTIMESCRIPT not found." >2
+        else 
+          $GPSTIMESCRIPT
+          log_end_msg 0
+        fi
+
+        log_begin_msg "Starting balon data capture daemon"
+        echo $( su -l -c '$HOME/scripts/monitor.py >>/home/odroid/monitor.log 2>&1 & echo $!' odroid ) >~odroid/monitor.pid
+        log_end_msg 0
+        ;;
+  stop)
+        log_begin_msg "Stopping balon data capture daemon"
+        if [ -f $PIDFILE ]; then 
+          kill $( cat $PIDFILE )
+        fi
+        #kill -9 $( cat ~odroid/monitor.pid )
+        rm $PIDFILE
+        log_end_msg 0
+        ;;
+  force-reload|restart)
+        $0 stop
+        $0 start
+        ;;
+  status)
+        echo Not implemented.
+        exit 0
+        ;;
+  *)
+        log_success_msg "Usage: /etc/init.d/balon {start|stop|restart|force-reload|status}"
+        exit 1
+esac
+
+exit 0
