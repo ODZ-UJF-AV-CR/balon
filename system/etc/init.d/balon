@@ -14,44 +14,57 @@
 
 [ -f /etc/default/rcS ] && . /etc/default/rcS
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-PROGRAM=/home/odroid/scripts/monitor.py
+DAEMON=/home/odroid/scripts/monitor.py
+PIDDIR=/var/run
+PIDFILE=$PIDDIR/balon.pid
+DESC="balon data capture daemon"
+NAME=balon
 
 PIDFILE=~odroid/monitor.pid
 
-GPSTIMESCRIPT=~odroid/scripts/set-time-from-gps.sh
-
-test -x $PROGRAM || exit 0
+GPSTIMESCRIPT=~odroid/scripts/gpstime.py
 
 VERBOSE=yes
 case "$1" in
   start)
-        log_begin_msg "Setting time from GPS fix if available"
-        if [ ! -x $GPSTIMESCRIPT ] ; then 
-          echo "$GPSTIMESCRIPT not found." >2
-        else 
-          $GPSTIMESCRIPT
-          log_end_msg 0
+        log_begin_msg "Waiting for GPS fix to set time"
+        if [ -x $GPSTIMESCRIPT ]; then 
+          date --utc --set="$($GPSTIMESCRIPT)" && log_end_msg 0
+        else
+          echo "GPS time set script not executable"
+          log_end_msg 1
         fi
 
-        log_begin_msg "Starting balon data capture daemon"
-        echo $( su -l -c '$HOME/scripts/monitor.py >>/home/odroid/monitor.log 2>&1 & echo $!' odroid ) >~odroid/monitor.pid
-        log_end_msg 0
+        if [ -e $PIDFILE ]; then
+          if $0 status > /dev/null ; then
+            log_success_msg "$DESC already started; not starting."
+            return
+          else
+            log_success_msg "Removing stale PID file $PIDFILE."
+            rm -f $PIDFILE
+          fi
+        fi
+
+        log_begin_msg "Starting $DESC" "$NAME"
+        start-stop-daemon --start -b --chuid odroid --quiet --pidfile $PIDFILE \
+           --exec $DAEMON -- --system $PARAMS
+        log_end_msg $?
+
+        #echo $( su -l -c '$HOME/scripts/monitor.py >>/home/odroid/monitor.log 2>&1 & echo $!' odroid ) >~odroid/monitor.pid
         ;;
   stop)
-        log_begin_msg "Stopping balon data capture daemon"
-        if [ -f $PIDFILE ]; then 
-          kill $( cat $PIDFILE )
-        fi
-        #kill -9 $( cat ~odroid/monitor.pid )
-        rm $PIDFILE
-        log_end_msg 0
+        log_daemon_msg "Stopping $DESC" "$NAME"
+	start-stop-daemon --stop --retry 5 --quiet --oknodo --pidfile $PIDFILE \
+	  --user $DAEMONUSER
+	log_end_msg $?
+	rm -f $PIDFILE
         ;;
   force-reload|restart)
         $0 stop
         $0 start
         ;;
   status)
-        echo Not implemented.
+        status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
         exit 0
         ;;
   *)
