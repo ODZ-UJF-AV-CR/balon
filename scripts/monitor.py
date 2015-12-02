@@ -27,7 +27,9 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
+                    filename='monitor.log'
                     )
+
 gpsd = None #seting the global variable
 
 from pymlab import config
@@ -36,17 +38,17 @@ from pymlab import config
 data_dir="/data/balon/"
 default_destination = "+420777642401"
 
-round_beat = 10 # Seconds for one round of sensors capture
+round_beat = 5 # Seconds for one round of sensors capture
 
 # Webcam #
-#webcam_enabled=True
 webcam_enabled=False
+webcam_enabled=True
 imagedir=data_dir+"img/"
 video_device="/dev/video0"
 resolutionx=640 # Max 1600
 resolutiony=480 # Max 480
 skipframes=5
-beattime=60
+beattime=20
 
 # GSM module #
 PORT = '/dev/ttyACM99'
@@ -297,7 +299,7 @@ sys.stdout.write("# Data acquisition system started \n")
 
 try:
     with open(data_dir+"data_log.csv", "a") as f:
-	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
+	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_climb\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
         while True:
             round_start=time.time()
             sensors['Epoch'] = round_start
@@ -306,15 +308,17 @@ try:
  
             # GPS data 
             logging.debug("Retrieving: GPS data")
-            sys.stdout.write("\nGPSTime: %s GPSfix: %d Alt: %.1f m Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            sys.stdout.write("\nGPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
             #sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
-            lr = lr + ("%s\t%d\t%.1f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.latitude, gpsd.fix.longitude))
+            lr = lr + ("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
             
             sensors['GPS_Time']=gpsd.utc
             sensors['GPS_Fix']=gpsd.fix.mode
             sensors['GPS_Alt']=gpsd.fix.altitude
             sensors['GPS_Lat']=gpsd.fix.latitude
             sensors['GPS_Lon']=gpsd.fix.longitude
+            sensors['GPS_Speed']=gpsd.fix.speed
+            sensors['GPS_Climb']=gpsd.fix.climb 
 
             # GSM module data
             sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
