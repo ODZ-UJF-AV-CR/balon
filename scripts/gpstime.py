@@ -30,7 +30,7 @@ if __name__ == '__main__':
     gpsp.start() # start it up
     zerotime=time.time()
     timetowait=30.0
-    while (not 'T' in  gpsd.utc and gpsd.fix.mode < 2) and (time.time() - zerotime < timetowait):
+    while (not 'T' in  gpsd.utc) and (time.time() - zerotime < timetowait):
       time.sleep(1) #set to whatever
 
     #print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
