@@ -25,10 +25,6 @@ from gsmmodem.modem import GsmModem, SentSms
 from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException
 ###
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
-                    filename='monitor.log'
-                    )
 
 gpsd = None #seting the global variable
 
@@ -36,26 +32,33 @@ from pymlab import config
 
 #### Settings #####
 data_dir="/data/balon/"
+log_dir="/home/odroid/data/"
 default_destination = "+420777642401"
 
 round_beat = 5 # Seconds for one round of sensors capture
 
+# Logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
+                    filename=log_dir+'monitor.log'
+                    )
 # Webcam #
 webcam_enabled=False
 webcam_enabled=True
 imagedir=data_dir+"img/"
 video_device="/dev/video0"
-resolutionx=640 # Max 1600
-resolutiony=480 # Max 480
+resolutionx=1280 # Max 1600
+resolutiony=720 # Max 480
 skipframes=5
-beattime=20
+beattime=10
 
 # GSM module #
 PORT = '/dev/ttyACM99'
 BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
 PIN = None # SIM card PIN (if any)
-####################################################################
 
+
+###########################
 def make_selfie():
   logging.debug("Initializing camera at {0} for {1}x{2} px JPEG every {3} s.".format(video_device,resolutionx,resolutiony,beattime))
   try:
@@ -173,6 +176,29 @@ def handleIncomingCall(call):
     else:
         logging.info('Call is ringing and we still have no CLIP.')
          
+# Modem GPIO reset handler
+def writepins(pin_value):
+    pin = open("/sys/class/gpio/gpio204/value","w")
+    pin.write(pin_value)
+    pin.close()
+
+def exportpins():
+    logging.debug("Exporting GPIO pin")
+    GPIO_EXPORT_PATH=os.path.normpath('/sys/class/gpio/export')
+    GPIO_MODE_PATH= os.path.normpath('/sys/class/gpio/gpio204/direction')
+    if (os.path.isdir('/sys/class/gpio/gpio204')):
+      logging.debug("/sys/class/gpio/gpio204 directory already exists, export not needed")
+    else:
+      try:
+        file = open(GPIO_EXPORT_PATH, 'w')
+        file.write("204")          ## export the pin to the usermode
+        file.close()
+
+        file = open(GPIO_MODE_PATH, 'r+')
+        file.write("out")          ## make the pin as output
+        file.close()
+      except:
+        logging.critical("Trouble exporting GPIO pin for modem reset.")
 
 class ModemHandler(threading.Thread):
   # +CGED: MCC:230, MNC:  3, LAC:878c, CI:2a95,
@@ -186,8 +212,19 @@ class ModemHandler(threading.Thread):
     self.networkName = "none"
     self.signalStrength = -1
     self.cellInfo = "none"
+ 
+  def modemPowerCycle(self):
+    # Should reset the modem using hardware pin
+    exportpins()
+    writepins('0')
+    sleep(2)
+    writepins('1') 
 
   def run(self):
+    # Initialize the GPIO interface
+    exportpins()
+    writepins('1')
+    
     logging.info("Modem thread running")
     global modem
     rxListenLength = 10
@@ -200,9 +237,10 @@ class ModemHandler(threading.Thread):
         logging.info("Initializing modem, try {0}.".format(init_count))
         modem.connect(PIN)
         init_count = -1
-      except TimeoutException as e:
-        logging.critical("Failed to initialize the GSM module: {0}", e)
+      except TimeoutException:
+        logging.critical("Failed to initialize the GSM module.")
         modem.close()
+        #self.modemPowerCycle()
 
     logging.info('Waiting for incoming calls...')
     while self.running:

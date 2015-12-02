@@ -29,25 +29,25 @@ if __name__ == '__main__':
   try:
     gpsp.start() # start it up
     zerotime=time.time()
-    timetowait=30.0
-    while (not 'T' in  gpsd.utc) and (time.time() - zerotime < timetowait):
+    timetowait=10.0
+    while (not 'T' in gpsd.utc) and (time.time() - zerotime < timetowait):
       time.sleep(1) #set to whatever
 
     #print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
     #print 'mode        ' , gpsd.fix.mode
     #print 
     s=gpsd.utc
-    if ('T' in s) and ('.' in s):
+    if ('T' in s) and ('.' in s) and not ('00:00:00' in s):
       datetime=s[:s.find('T')]+' '+s[s.find('T')+1:s.find('.')]
       print datetime
     else:
-      print s
+      sys.exit(1)
     
     gpsp.running = False
     gpsp.join() # wait for the thread to finish what it's doing
 
   except (KeyboardInterrupt, SystemExit): #when you press ctrl+c
-    print "\nKilling Thread..."
+    #print "\nKilling Thread..."
     gpsp.running = False
     gpsp.join() # wait for the thread to finish what it's doing
     sys.exit(1)
