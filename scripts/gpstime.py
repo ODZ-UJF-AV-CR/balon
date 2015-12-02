@@ -2,8 +2,6 @@
 # Written by Dan Mandle http://dan.mandle.me September 2012
 # License: GPL 2.0 
 
-# Altered to wait for a GPS fix for 15 seconds to get time info
-
 import os
 from gps import *
 from time import *
@@ -31,9 +29,9 @@ if __name__ == '__main__':
   try:
     gpsp.start() # start it up
     #print 'Waiting for GPS fix, no longer than 30 s'
-    zerotime=time.clock()
+    zerotime=time.time()
     timetowait=30.0
-    while (gpsd.fix.mode < 2) and (time.clock() - zerotime < timetowait):
+    while (gpsd.fix.mode < 4) and (time.time() - zerotime < timetowait):
       time.sleep(1) #set to whatever
 
     #print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
