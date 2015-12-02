@@ -2,9 +2,10 @@
 
 # Acquire images from the webcam in a loop
 
-DELAY=30
+DELAY=10
 RES=1600x1200
 RES=1280x960
+RES=1280x720
 
 # F 5 is better at night
 mkdir -p img
