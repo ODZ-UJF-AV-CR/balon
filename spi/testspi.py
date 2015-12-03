@@ -49,7 +49,7 @@ try:
             #pin.close()
             resp = spi.readbytes(2)
             time.sleep(0.00001) # sleep for 0.1 seconds
-            #print resp
+            print resp
         #time.sleep(0.1) # sleep for 0.1 seconds
         #end while
 except KeyboardInterrupt: 
