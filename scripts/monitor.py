@@ -38,14 +38,18 @@ default_destination = "+420777642401"
 round_beat = 5 # Seconds for one round of sensors capture
 
 # Logging
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
                     filename=log_dir+'monitor.log'
-                    )
+#                    )
+#logging.basicConfig(level=logging.INFO,
+#                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
+#                    )
 # Webcam #
 webcam_enabled=False
 webcam_enabled=True
 imagedir=data_dir+"img/"
+#video_devices=["/dev/video0","/dev/video1","/dev/video2"]
 video_device="/dev/video0"
 resolutionx=1280 # Max 1600
 resolutiony=720 # Max 480
@@ -300,6 +304,7 @@ except IndexError:
     sys.stdout.write("Invalid configuration number.")
     sys.exit(1)
 
+logging.debug('Initializing I2C sensors')
 cfg.initialize()
 altimet = cfg.get_device("altimet")
 sht_sensor = cfg.get_device("sht25")
@@ -397,17 +402,20 @@ try:
 
             # Battery sensors
             logging.debug("Retrieving: Battery sensor data")
-            guage.route()
-            sensors['Bat_Temp'] = guage.getTemp()
-            sensors['Bat_RemCap'] = guage.getRemainingCapacity()
-            sensors['Bat_FullChargeCapacity'] = guage.FullChargeCapacity()
-            sensors['Bat_V'] = guage.Voltage()
-            sensors['Bat_AvgI'] = guage.AverageCurrent()
-            sensors['Bat_Charge'] = guage.StateOfCharge()
+            try:
+              guage.route()
+              sensors['Bat_Temp'] = guage.getTemp()
+              sensors['Bat_RemCap'] = guage.getRemainingCapacity()
+              sensors['Bat_FullChargeCapacity'] = guage.FullChargeCapacity()
+              sensors['Bat_V'] = guage.Voltage()
+              sensors['Bat_AvgI'] = guage.AverageCurrent()
+              sensors['Bat_Charge'] = guage.StateOfCharge()
 
-            sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
+              sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
             #print "BatTemp: ", guage.getTemp(), "degC, RemainCapacity =", guage.getRemainingCapacity(), "mAh, cap =", guage.FullChargeCapacity(), "mAh, U =", guage.Voltage(), "mV, I =", guage.AverageCurrent(), "mA, charge =", guage.StateOfCharge(), "%"
-            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
+              lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
+            except IOError:
+              logging.critical('Battery sensors unavailable')
 
             sensors['Ready']=True
             logging.debug("Writing to file")
