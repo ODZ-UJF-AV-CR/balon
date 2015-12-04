@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import spidev
 import time
+import datetime
 
 spi = spidev.SpiDev() # create spi object
 spi.open(1, 0) # open spi port 0, device (CS) 1
@@ -16,7 +17,7 @@ try:
             resp = spi.readbytes(2)
             channels[(resp[0] << 1) | (resp[1] >> 7)] += 1
             time.sleep(0.00001) # sleep (loop 100 us)
-        print channels
+        print datetime.datetime.now(), channels
         #time.sleep(0.1) # sleep for 0.1 seconds
         #end while
 except KeyboardInterrupt: 
