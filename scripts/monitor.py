@@ -42,6 +42,7 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
                     filename=log_dir+'monitor.log'
                     )
+
 #logging.basicConfig(level=logging.INFO,
 #                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
 #                    )
@@ -65,7 +66,12 @@ PIN = None # SIM card PIN (if any)
 ###########################
 def make_selfie():
  for video_device in video_devices:
-  device_number = int(video_device[-1])
+  device_number = video_device[-1]
+  if (not device_number.isdigit()):
+    logging.critical("Webcam device specification likely wrong, last char not a number: %s." % (video_device))
+    continue
+  else:
+    device_number = int(device_number)
   
   logging.debug("Initializing camera {0} at {1} for {2}x{3} px JPEG every {4} s.".format(device_number,video_device,resolutionx,resolutiony,beattime))
   try:
