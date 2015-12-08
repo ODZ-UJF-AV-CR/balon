@@ -41,16 +41,16 @@ round_beat = 5 # Seconds for one round of sensors capture
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
                     filename=log_dir+'monitor.log'
-#                    )
+                    )
 #logging.basicConfig(level=logging.INFO,
 #                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
 #                    )
+
 # Webcam #
-webcam_enabled=False
+#webcam_enabled=False
 webcam_enabled=True
 imagedir=data_dir+"img/"
-#video_devices=["/dev/video0","/dev/video1","/dev/video2"]
-video_device="/dev/video0"
+video_devices=["/dev/video0","/dev/video1"]
 resolutionx=1280 # Max 1600
 resolutiony=720 # Max 480
 skipframes=5
@@ -64,7 +64,10 @@ PIN = None # SIM card PIN (if any)
 
 ###########################
 def make_selfie():
-  logging.debug("Initializing camera at {0} for {1}x{2} px JPEG every {3} s.".format(video_device,resolutionx,resolutiony,beattime))
+ for video_device in video_devices:
+  device_number = int(video_device[-1])
+  
+  logging.debug("Initializing camera {0} at {1} for {2}x{3} px JPEG every {4} s.".format(device_number,video_device,resolutionx,resolutiony,beattime))
   try:
     cam = pygame.camera.Camera(video_device,(resolutionx,resolutiony))
     cam.start()
@@ -88,7 +91,7 @@ def make_selfie():
         return(2)
 
   # Construct file name
-  savefname=time.strftime(imagedir+'%F_%T.jpg', time.gmtime())
+  savefname=imagedir+('cam%d-' % (device_number))+time.strftime('%F_%T.jpg', time.gmtime())
   logging.info("Capturing {0}x{1} frame to {2}.".format(resolutionx,resolutiony,savefname))
   try:
     ensure_dir(savefname)
@@ -109,8 +112,8 @@ class WebCamCapture(threading.Thread):
   def run(self):
     logging.debug("Thread starting")
     while webcam.running:
-      zerotime=time.time()
       make_selfie()
+      zerotime=time.time()
       selfie_time=time.time()-zerotime
       if (selfie_time > beattime):
         logging.warn("Webcam image capture takes too long: {0} s, can not pad the beats to {1}.".format(selfie_time, beattime))
@@ -241,9 +244,14 @@ class ModemHandler(threading.Thread):
         logging.info("Initializing modem, try {0}.".format(init_count))
         modem.connect(PIN)
         init_count = -1
-      except TimeoutException:
+      except OSError,TimeoutException:
+        # OSError means pppd is likely running
         logging.critical("Failed to initialize the GSM module.")
-        modem.close()
+        try:
+          modem.close()
+        except AttributeError:
+          True 
+        time.sleep(5)
         #self.modemPowerCycle()
 
     logging.info('Waiting for incoming calls...')
@@ -331,7 +339,14 @@ logging.info("Initializing GSM support.")
 gsmpart = ModemHandler()
 gsmpart.start()
 
-#### 
+#### Init the sensors dictionary ####
+# Battery sensor
+sensors['Bat_Temp'] = -1
+sensors['Bat_RemCap'] = -1 
+sensors['Bat_FullChargeCapacity'] = -1
+sensors['Bat_V'] = -1
+sensors['Bat_AvgI'] = -1
+sensors['Bat_Charge'] = -1
 
 #### Data Logging ###################################################
 
@@ -339,6 +354,7 @@ sys.stdout.write("# Data acquisition system started \n")
 
 #gpsp.join()
 
+runstart=time.time()
 
 try:
     with open(data_dir+"data_log.csv", "a") as f:
@@ -351,7 +367,7 @@ try:
  
             # GPS data 
             logging.debug("Retrieving: GPS data")
-            sys.stdout.write("\nGPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
+            sys.stdout.write("\n%d GPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (time.time()-runstart, gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
             #sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
             lr = lr + ("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
             
@@ -411,12 +427,16 @@ try:
               sensors['Bat_AvgI'] = guage.AverageCurrent()
               sensors['Bat_Charge'] = guage.StateOfCharge()
 
-              sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
-            #print "BatTemp: ", guage.getTemp(), "degC, RemainCapacity =", guage.getRemainingCapacity(), "mAh, cap =", guage.FullChargeCapacity(), "mAh, U =", guage.Voltage(), "mV, I =", guage.AverageCurrent(), "mA, charge =", guage.StateOfCharge(), "%"
-              lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (guage.getTemp(), guage.getRemainingCapacity(), guage.FullChargeCapacity(), guage.Voltage(), guage.AverageCurrent(), guage.StateOfCharge()))
+              sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
+                              (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
             except IOError:
               logging.critical('Battery sensors unavailable')
+            
+            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
 
+            # End of sensors, write out data
+            sys.stdout.write("\n")
+            lr=lr + "\n"
             sensors['Ready']=True
             logging.debug("Writing to file")
             f.write(lr) 
