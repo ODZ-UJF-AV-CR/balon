@@ -155,14 +155,21 @@ class GpsPoller(threading.Thread):
 #### Send position in a SMS ########################################
 def send_position_via_sms(destination):
     logging.info("Will send position via SMS to: {0}.".format(destination))
+    # Get current time
+
     try:
        # Get a GPS fix, prepare a string with it
-       if (sensors['GPS_Fix'] < 3):
-         smstext = "{0} GSM: {1}".format(gpsd.utc, sensors['GSM_CellInfo']) 
+       if (sv('GPS_Fix') < 3):
+         timestring = time.strftime('%T', time.gmtime())
+         smstext = "{0} GSM: {1}".format(timestring, sv('GSM_CellInfo')) 
        else:
-         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3}".format(gpsd.utc, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
+         timestring = time.strftime('%T', time.gmtime())
+         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3}".format(timestring, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
 
-       smstext = smstext + (" BT{0} BCH{1} ".format(sensors['Bat_Temp'], sensors['Bat_Charge']))
+       if ('Bat_Temp' in sensors) and ('Bat_Charge' in sensors):
+         smstext = smstext + (" BT{0} BCH{1} ".format(sv('Bat_Temp'), sv('Bat_Charge')))
+       else:
+         smstext = smstext + " NoBatInfo"
 
        sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
     except TimeoutException:
@@ -345,14 +352,13 @@ logging.info("Initializing GSM support.")
 gsmpart = ModemHandler()
 gsmpart.start()
 
-#### Init the sensors dictionary ####
-# Battery sensor
-sensors['Bat_Temp'] = -1
-sensors['Bat_RemCap'] = -1 
-sensors['Bat_FullChargeCapacity'] = -1
-sensors['Bat_V'] = -1
-sensors['Bat_AvgI'] = -1
-sensors['Bat_Charge'] = -1
+# Get sensor value or -1 if not available
+def sv(sname):
+  if sname in sensors:
+    return(sensors[sname])
+  else:
+    return(-1)
+
 
 #### Data Logging ###################################################
 
@@ -438,7 +444,7 @@ try:
             except IOError:
               logging.critical('Battery sensors unavailable')
             
-            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
+            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
 
             # End of sensors, write out data
             sys.stdout.write("\n")
