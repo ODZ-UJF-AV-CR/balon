@@ -8,7 +8,12 @@ import datetime
 import threading
 import logging
 
-import spidev
+pcrd_ready = True
+try:
+  import spidev
+except ImportError:
+  logging.critical('Failed to import spidev module, PCRD poller unavailable.')
+  pcrd_ready = False
 
 #### PCRD poller ####
 class PCRD_poller(threading.Thread):
@@ -49,6 +54,7 @@ class PCRD_poller(threading.Thread):
 #### main ####
 if __name__ == '__main__':
   logging.info('Starting PCRD readout')
-  pcrd = PCRD_poller()
-  pcrd.start()
-  pcrd.join()
+  if pcrd_ready:
+    pcrd = PCRD_poller()
+    pcrd.start()
+    pcrd.join()
