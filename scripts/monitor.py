@@ -117,7 +117,7 @@ class WebCamCapture(threading.Thread):
 
   def run(self):
     logging.debug("Thread starting")
-    while webcam.running:
+    while self.running:
       make_selfie()
       zerotime=time.time()
       selfie_time=time.time()-zerotime
