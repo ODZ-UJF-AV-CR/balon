@@ -44,12 +44,11 @@ class PCRD_poller(threading.Thread):
             channels[(resp[0] << (bits - 8)) | (resp[1] >> (16 - bits))] += 1	# increment a channel addressed by 13 bits index
             time.sleep(0.00001) 						# sleep (loop 100 us)	
         print datetime.datetime.now(), channels[:1000]				# print first 1000 channels
-
-    except KeyboardInterrupt, SystemExit: 
-      spi.close()
-      self.running = False
+        print "Log the data from here"
 
     logging.debug("Thread is exiting.")
+    spi.close()
+    self.running = False
 
 #### main ####
 if __name__ == '__main__':
