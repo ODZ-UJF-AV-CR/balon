@@ -30,12 +30,15 @@ gpsd = None #seting the global variable
 
 from pymlab import config
 
+import m_pcrd
+
 #### Settings #####
 data_dir="/data/balon/"
-log_dir="/home/odroid/data/"
+log_dir=data_dir
 default_destination = "+420777642401"
 
 round_beat = 5 # Seconds for one round of sensors capture
+
 
 # Logging
 logging.basicConfig(level=logging.INFO,
@@ -62,6 +65,11 @@ PORT = '/dev/ttyACM99'
 BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
 PIN = None # SIM card PIN (if any)
 
+# PCRD readout
+logging.info('Starting PCRD readout')
+pcrd = m_pcrd.PCRD_poller()
+pcrd.data_dir = data_dir
+pcrd.start()
 
 ###########################
 def make_selfie():
@@ -386,10 +394,6 @@ try:
  
             # GPS data 
             logging.debug("Retrieving: GPS data")
-            sys.stdout.write("\n%d GPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (time.time()-runstart, gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
-            #sys.stdout.write("GPSfix: %d " % (gpsd.fix.mode))
-            lr = lr + ("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (gpsd.utc, gpsd.fix.mode, gpsd.fix.altitude, gpsd.fix.speed, gpsd.fix.climb, gpsd.fix.latitude, gpsd.fix.longitude))
-            
             sensors['GPS_Time']=gpsd.utc
             sensors['GPS_Fix']=gpsd.fix.mode
             sensors['GPS_Alt']=gpsd.fix.altitude
@@ -398,6 +402,8 @@ try:
             sensors['GPS_Speed']=gpsd.fix.speed
             sensors['GPS_Climb']=gpsd.fix.climb 
 
+            sys.stdout.write("\n%d GPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (time.time()-runstart, sv('GPS_Time'), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
+            lr = lr + ("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (str(sv('GPS_Time')), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
             # GSM module data
             sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
             lr = lr + ("%d\t%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
@@ -450,7 +456,7 @@ try:
               logging.critical('SHT sensors unavailable as %s' % e)
               sensors['SHT_Online'] = False
 
-            lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_HUM')))
+            lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_Hum')))
 
             # Battery sensors
             logging.debug("Retrieving: Battery sensor data")
@@ -470,7 +476,7 @@ try:
               logging.critical('Battery sensors unavailable: %s' % e)
               sensors['Bat_Online'] = False
             
-            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
+            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
 
             # End of sensors, write out data
             sys.stdout.write("\n")
@@ -488,14 +494,17 @@ except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting:")
     #f.write("\r\n")
     f.close()
+    if pcrd.isAlive():
+      pcrd.running = False
+      logging.info("Requesting PCRD thread to shut down.")
     if gsmpart.running:
       gsmpart.running = False
       #gsmpart.join()
-      logging.info("GSM thread asked to shut down.")
+      logging.info("Requesting GSM thread to shut down.")
     if webcam_enabled:
       webcam.running = False
       #webcam.join() # wait for WebCam thread
-      logging.info("Webcam thread asked to shut down.")
+      logging.info("Requesting Webcam thread shut down.")
     if gpsp.running:
       gpsp.running = False
       #gpsp.join()   # wait for GPS poller thread

@@ -9,8 +9,12 @@ import threading
 import logging
 import spidev
 
+# Default data dir:
+
 #### PCRD poller ####
 class PCRD_poller(threading.Thread):
+  # Default data dir
+  data_dir = './'
   def __init__(self):
       logging.info("PCRD poller thread is initializing.")
       threading.Thread.__init__(self)
@@ -18,6 +22,7 @@ class PCRD_poller(threading.Thread):
       self.name = 'PCRD'
 
   def run(self):
+    global sensors
     logging.info("Thread is starting.")
     try:
       spi = spidev.SpiDev() # create a spi object
@@ -27,22 +32,32 @@ class PCRD_poller(threading.Thread):
       self.running = False
 
     try:
-      #spi.mode = 2
-      #spi.bits_per_word = 8
-      #spi.cshigh = False
-      bits = 13	                                                                # number of bits from A/D
-      while self.running:
-        channels = [0] * (2**bits)						# number of channels
-        for n in range(50000):							# number of measurements
+      datafname = self.data_dir+"data_pcrd.csv"
+      logging.info('PCRD data will be appended to: %s' % (datafname))
+      with open(datafname, "a") as pf:
+        #spi.mode = 2
+        #spi.bits_per_word = 8
+        #spi.cshigh = False
+        bits = 13	                                                                # number of bits from A/D
+        while self.running:
+          roundstart = time.time()
+          channels = [0] * (2**bits)						# number of channels
+          for n in range(50000):							# number of measurements
             resp = spi.readbytes(2)						# read word from A/D converter through SPI
             channels[(resp[0] << (bits - 8)) | (resp[1] >> (16 - bits))] += 1	# increment a channel addressed by 13 bits index
             time.sleep(0.00001) 						# sleep (loop 100 us)	
-        #print datetime.datetime.now(), channels				        # print all channels
-        print datetime.datetime.now(), channels[:1000]				# print first 1000 channels
+          #print datetime.datetime.now(), channels				# print all channels
+          pf.write('%s %s %s ' % (str(time.time()), str(time.time()-roundstart), str(datetime.datetime.now())))
+          pf.write((' %s\n' % (' '.join(str(x) for x in channels))))
+          pf.flush()
+          message = str(channels[:30])    # print first 30 channels
+          logging.info(message)
 
     except IOError as e:
       logging.critical("%s" % e)
       self.running = False
+
+    pf.close()
 
     logging.info("PCRD poller thread exiting.")
     spi.close()
