@@ -23,8 +23,13 @@ def get_cputemp():
 
 #### main ####
 if __name__ == '__main__':
+  sensors = {}
+  logging.basicConfig(level=logging.INFO,
+                      format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
+                      )
+
   logging.info('Starting CPU temperature readout')
   while True:
     if get_cputemp():
-      print "CPU Temp: %.2f" % sensors['CPU_Temp']
+      logging.info("CPU Temp: %.2f" % sensors['CPU_Temp'])
     time.sleep(2)
