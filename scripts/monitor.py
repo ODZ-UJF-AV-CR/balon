@@ -325,11 +325,18 @@ except IndexError:
     sys.stdout.write("Invalid configuration number.")
     sys.exit(1)
 
+# Initialize the hub
 logging.debug('Initializing I2C sensors')
-cfg.initialize()
+try:
+  cfg.initialize()
+except IOError as e:
+  logging.critical('Whole I2C bus unavailable: %s' % e)
+
+# Initialize 
 altimet = cfg.get_device("altimet")
 sht_sensor = cfg.get_device("sht25")
 guage = cfg.get_device("guage")
+
 time.sleep(0.5)
 
 # GPS thread initialization and startup
@@ -399,34 +406,51 @@ try:
 
             # CPU Temperature
             logging.debug("Retrieving: CPU thermal sensor data")
-            with open("/sys/class/thermal/thermal_zone0/temp") as cputempf:
+            try:
+              with open("/sys/class/thermal/thermal_zone0/temp") as cputempf:
                 cputemp=cputempf.readline()
                 cputempf.close()
                 cputemp=float(cputemp.rstrip())/1000.0
                 sys.stdout.write("CPUTemp %.1f C " % cputemp)
-                lr=lr+"%.2f\t" % (cputemp)
                 sensors['CPU_Temp'] = cputemp
+            except IOError as e:
+              logging.critical('CPU temperature sensors unavailable %s' % e)
+              sensors['CPU_Online'] = False
+            
+            lr=lr+"%.2f\t" % (sv('CPU_Temp'))
 
             # Altimet
             logging.debug("Retrieving: Altimet temperature and pressure data")
-            altimet.route()
-            (t1, p1) = altimet.get_tp()
-            if (p1 == 0):
-              logging.error('Altimet malfunction - no data from pressure indicator.')
-            sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
-            lr=lr+("%.3f\t%d\t" % (t1, p1))
-            sensors['Altimet_Temp'] = t1
-            sensors['Altimet_Press'] = p1
+            try:
+              altimet.route()
+              (t1, p1) = altimet.get_tp()
+              if (p1 == 0):
+                logging.error('Altimet malfunction - no data from pressure indicator.')
+              sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
+              sensors['Altimet_Temp'] = t1
+              sensors['Altimet_Press'] = p1
+              sensors['Altimet_Online'] = True
+            except IOError:
+              logging.critical('Altimet sensors unavailable %s' % e)
+              sensors['Altimet_Online'] = False
+
+            lr=lr+("%.3f\t%d\t" % (sv('Altimet_Temp'), sv('Altimet_Press')))
 
             # SHT sensor	
             logging.debug("Retrieving: SHT sensor data")
-            sht_sensor.route()	    	
-            temperature = sht_sensor.get_temp()
-            humidity = sht_sensor.get_hum()
-            sys.stdout.write("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
-            lr=lr+("%.2f\t%.1f\t" % (temperature, humidity))
-            sensors['SHT_Temp'] = temperature
-            sensors['SHT_Hum'] = humidity
+            try:
+              sht_sensor.route()	    	
+              temperature = sht_sensor.get_temp()
+              humidity = sht_sensor.get_hum()
+              sys.stdout.write("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
+              sensors['SHT_Temp'] = temperature
+              sensors['SHT_Hum'] = humidity
+              sensors['SHT_Online'] = True
+            except IOError as e:
+              logging.critical('SHT sensors unavailable as %s' % e)
+              sensors['SHT_Online'] = False
+
+            lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_HUM')))
 
             # Battery sensors
             logging.debug("Retrieving: Battery sensor data")
@@ -438,11 +462,13 @@ try:
               sensors['Bat_V'] = guage.Voltage()
               sensors['Bat_AvgI'] = guage.AverageCurrent()
               sensors['Bat_Charge'] = guage.StateOfCharge()
+              sensors['Bat_Online'] = True
 
               sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
                               (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
-            except IOError:
-              logging.critical('Battery sensors unavailable')
+            except IOError as e:
+              logging.critical('Battery sensors unavailable: %s' % e)
+              sensors['Bat_Online'] = False
             
             lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f\n" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
 
