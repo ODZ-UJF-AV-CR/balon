@@ -25,7 +25,6 @@ from gsmmodem.modem import GsmModem, SentSms
 from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException
 ###
 
-
 gpsd = None #seting the global variable
 
 from pymlab import config
@@ -45,6 +44,13 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
                     filename=log_dir+'monitor.log'
                     )
+
+# define a Handler which writes INFO messages or higher to the sys.stderr
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
 
 #logging.basicConfig(level=logging.INFO,
 #                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -76,7 +82,7 @@ def make_selfie():
  for video_device in video_devices:
   device_number = video_device[-1]
   if (not device_number.isdigit()):
-    logging.critical("Webcam device specification likely wrong, last char not a number: %s." % (video_device))
+    logging.error("Webcam device specification likely wrong, last char not a number: %s." % (video_device))
     continue
   else:
     device_number = int(device_number)
@@ -226,7 +232,7 @@ def exportpins():
         file.write("out")          ## make the pin as output
         file.close()
       except:
-        logging.critical("Trouble exporting GPIO pin for modem reset.")
+        logging.error("Trouble exporting GPIO pin for modem reset.")
 
 class ModemHandler(threading.Thread):
   # +CGED: MCC:230, MNC:  3, LAC:878c, CI:2a95,
@@ -267,7 +273,7 @@ class ModemHandler(threading.Thread):
         init_count = -1
       except OSError,TimeoutException:
         # OSError means pppd is likely running
-        logging.critical("Failed to initialize the GSM module.")
+        logging.error("Failed to initialize the GSM module.")
         try:
           modem.close()
         except AttributeError:
@@ -330,7 +336,7 @@ cfglist=[
 try:
     cfg = cfglist[cfg_number]
 except IndexError:
-    sys.stdout.write("Invalid configuration number.")
+    logging.critical("Invalid configuration number.")
     sys.exit(1)
 
 # Initialize the hub
@@ -377,7 +383,7 @@ def sv(sname):
 
 #### Data Logging ###################################################
 
-sys.stdout.write("# Data acquisition system started \n")
+logging.info("# Data acquisition system started")
 
 #gpsp.join()
 
@@ -402,10 +408,10 @@ try:
             sensors['GPS_Speed']=gpsd.fix.speed
             sensors['GPS_Climb']=gpsd.fix.climb 
 
-            sys.stdout.write("\n%d GPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (time.time()-runstart, sv('GPS_Time'), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
+            logging.info("%d GPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (time.time()-runstart, sv('GPS_Time'), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
             lr = lr + ("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (str(sv('GPS_Time')), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
             # GSM module data
-            sys.stdout.write("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
+            logging.info("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
             lr = lr + ("%d\t%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
             sensors['GSM_Signal'] = gsmpart.signalStrength
 	    sensors['GSM_CellInfo'] = gsmpart.cellInfo
@@ -417,10 +423,10 @@ try:
                 cputemp=cputempf.readline()
                 cputempf.close()
                 cputemp=float(cputemp.rstrip())/1000.0
-                sys.stdout.write("CPUTemp %.1f C " % cputemp)
+                logging.info("CPUTemp %.1f C " % cputemp)
                 sensors['CPU_Temp'] = cputemp
             except IOError as e:
-              logging.critical('CPU temperature sensors unavailable %s' % e)
+              logging.error('CPU temperature sensors unavailable %s' % e)
               sensors['CPU_Online'] = False
             
             lr=lr+"%.2f\t" % (sv('CPU_Temp'))
@@ -432,12 +438,12 @@ try:
               (t1, p1) = altimet.get_tp()
               if (p1 == 0):
                 logging.error('Altimet malfunction - no data from pressure indicator.')
-              sys.stdout.write("AltiTemp: %.2f C Press: %d " % (t1, p1))
+              logging.info("AltiTemp: %.2f C Press: %d " % (t1, p1))
               sensors['Altimet_Temp'] = t1
               sensors['Altimet_Press'] = p1
               sensors['Altimet_Online'] = True
             except IOError:
-              logging.critical('Altimet sensors unavailable %s' % e)
+              logging.error('Altimet sensors unavailable %s' % e)
               sensors['Altimet_Online'] = False
 
             lr=lr+("%.3f\t%d\t" % (sv('Altimet_Temp'), sv('Altimet_Press')))
@@ -448,12 +454,12 @@ try:
               sht_sensor.route()	    	
               temperature = sht_sensor.get_temp()
               humidity = sht_sensor.get_hum()
-              sys.stdout.write("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
+              logging.info("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
               sensors['SHT_Temp'] = temperature
               sensors['SHT_Hum'] = humidity
               sensors['SHT_Online'] = True
             except IOError as e:
-              logging.critical('SHT sensors unavailable as %s' % e)
+              logging.error('SHT sensors unavailable as %s' % e)
               sensors['SHT_Online'] = False
 
             lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_Hum')))
@@ -470,22 +476,20 @@ try:
               sensors['Bat_Charge'] = guage.StateOfCharge()
               sensors['Bat_Online'] = True
 
-              sys.stdout.write("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
+              logging.info("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
                               (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
             except IOError as e:
-              logging.critical('Battery sensors unavailable: %s' % e)
+              logging.error('Battery sensors unavailable: %s' % e)
               sensors['Bat_Online'] = False
             
             lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
 
             # End of sensors, write out data
-            sys.stdout.write("\n")
             lr=lr + "\n"
             sensors['Ready']=True
-            logging.debug("Writing to file")
+            logging.info("Writing to file --------------------------------------------------------------------------------")
             f.write(lr) 
 	    f.flush()
-            sys.stdout.flush()
             round_timeleft = round_beat + round_start - time.time()
             if (round_timeleft > 0):
               time.sleep(round_timeleft)
