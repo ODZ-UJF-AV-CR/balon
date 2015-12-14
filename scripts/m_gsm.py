@@ -20,6 +20,7 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 ###
 
 modem=None
+ppp_requested = False
 
 # GSM module #
 default_destination = "+420777642401"
@@ -95,9 +96,24 @@ def exportpins():
       except:
         logging.error("Trouble exporting GPIO pin for modem reset.")
 
+def handleSms(sms):
+  global ppp_requested
+  logging.info('SMS From {0} at {1}:{2}'.format(sms.number, sms.time, sms.text))
+  if sms.text == 'pos':
+    logging.info('SMS: Position request')
+    send_position_via_sms(sms.number)
+  elif sms.text == 'ppp':
+    logging.info('SMS: GSM uplink requested')
+    modem.sendSMS(sms.number,'Activating PPP uplink.')
+    ppp_requested = True
+  else:
+    logging.info('SMS: Command not understood')
+    
+
 class ModemHandler(threading.Thread):
   # +CGED: MCC:230, MNC:  3, LAC:878c, CI:2a95,
   CGED_REGEX = re.compile(r'^\+CGED:\s*MCC:([^,]+),\s*MNC:\s*([^,]+),\s*LAC:\s*([^,]+),\s*CI:\s*([^,]+),.*')
+
   def __init__(self):
     logging.info("Starting Modem handler thread")
     threading.Thread.__init__(self)
@@ -131,49 +147,64 @@ class ModemHandler(threading.Thread):
     
     logging.info("Modem thread running")
     global modem
+    global ppp_requested
     rxListenLength = 5
     init_count = 0
     
-    while self.running and init_count > -1:
-      try:
-        init_count = init_count + 1
-        modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
-        logging.info("Initializing modem, try {0}.".format(init_count))
-        modem.connect(PIN)
-        init_count = -1
-      except (OSError, TimeoutException):
-        # OSError means pppd is likely running
-        logging.error("Failed to initialize the GSM module.")
+    while self.running
+      while self.running and not ppp_requested and init_count > -1:
         try:
-          modem.close()
-        except AttributeError:
-          True 
-        time.sleep(5)
-        #self.modemPowerCycle()
+          init_count = init_count + 1
+          modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall, smsReceivedCallbackFunc=handleSms)
+          logging.info("Initializing modem, try {0}.".format(init_count))
+          modem.connect(PIN)
+          init_count = -1
+        except (OSError, TimeoutException):
+          # OSError means pppd is likely running
+          logging.error("Failed to initialize the GSM module.")
+          try:
+            modem.close()
+          except AttributeError:
+            True 
+          time.sleep(5)
+          #self.modemPowerCycle()
 
-    logging.info('Waiting for incoming calls...')
-    while self.running:
-      try:
-        #waitForNetworkCoverage()
-        self.signalStrength = modem.signalStrength
-        self.networkName = modem.networkName
-        #modem.write("AT+CFUN=0")
-        serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
-        if serving_cell:
-          mcc=serving_cell.group(1)
-          mnc=serving_cell.group(2)
-          lac=serving_cell.group(3)
-          ci=serving_cell.group(4)
-          self.cellInfo="{0}/{1}/{2}/{3}".format(mcc, mnc, lac, ci)
+      logging.info('Waiting for incoming calls...')
+      while self.running and not ppp_requested:
+        try:
+          #waitForNetworkCoverage()
+          self.signalStrength = modem.signalStrength
+          self.networkName = modem.networkName
+          #modem.write("AT+CFUN=0")
+          serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
+          if serving_cell:
+            mcc=serving_cell.group(1)
+            mnc=serving_cell.group(2)
+            lac=serving_cell.group(3)
+            ci=serving_cell.group(4)
+            self.cellInfo="{0}/{1}/{2}/{3}".format(mcc, mnc, lac, ci)
 
-        # Comms are handled elsewhere so we could eventually just sleep, waiting
-        #time.sleep(rxListenLength)
-        modem.rxThread.join(rxListenLength) 
-      except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
-        logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
+          # Comms are handled elsewhere so we could eventually just sleep, waiting
+          #time.sleep(rxListenLength)
+          modem.rxThread.join(rxListenLength) 
+        except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
+          logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
 
-    modem.close()
-    logging.info("Modem closed.")
+      modem.close()
+      logging.info("Modem interface closed.")
+      # If PPP was requested, now it's the time
+      if ppp_requested:
+        try:
+          logging.info('Waiting for network coverage')
+          waitForNetworkCoverage()
+          logging.info('Launching PPP session.' % rc)
+          rc = subprocess.call(['timeout','360','pon'])
+          logging.info('PPP ended with code %d.' % rc)
+        except:
+          logging.info('PPP link attempt failed')
+        ppp_requested = False
+      #end of if
+    #end of while
 
 #### main ####
 if __name__ == '__main__':
