@@ -1,0 +1,7 @@
+#!/bin/bash
+# Requires the key to be setup correctly
+
+while true
+do
+  ssh -N -R 8122:localhost:22 balon@bobr.ujf.cas.cz
+done
