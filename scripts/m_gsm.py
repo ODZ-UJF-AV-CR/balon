@@ -11,6 +11,7 @@ import logging
 import re
 import os
 import threading
+import subprocess
 
 import m_gps
 
@@ -22,6 +23,8 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 modem=None
 ppp_requested = False
 
+sms_queue = []
+
 # GSM module #
 default_destination = "+420777642401"
 PORT = '/dev/ttyACM99'
@@ -30,6 +33,7 @@ PIN = None # SIM card PIN (if any)
 
 #### Send position in a SMS ########################################
 def send_position_via_sms(destination):
+    global modem
     logging.info("Will send position via SMS to: {0}.".format(destination))
     # Get current time
 
@@ -47,9 +51,9 @@ def send_position_via_sms(destination):
        #else:
        #  smstext = smstext + " NoBatInfo"
 
-       sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
+       sms = modem.sendSms(destination, smstext, waitForDeliveryReport=False)
     except TimeoutException:
-       logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
+       logging.warn('Failed to send message to {0}: the send operation timed out'.format(destination))
     else:
        if sms.report:
             logging.info('Message sent{0}'.format(' and delivered OK.' if sms.status == SentSms.DELIVERED else ', but delivery failed.'))
@@ -98,13 +102,14 @@ def exportpins():
 
 def handleSms(sms):
   global ppp_requested
+  global sms_queue
   logging.info('SMS From {0} at {1}:{2}'.format(sms.number, sms.time, sms.text))
-  if sms.text == 'pos':
+  if sms.text.lower() == 'pos':
     logging.info('SMS: Position request')
-    send_position_via_sms(sms.number)
-  elif sms.text == 'ppp':
+    sms_queue.append('position')
+  elif sms.text.lower() == 'ppp':
     logging.info('SMS: GSM uplink requested')
-    modem.sendSMS(sms.number,'Activating PPP uplink.')
+    sms_queue.append('Activating PPP uplink.')
     ppp_requested = True
   else:
     logging.info('SMS: Command not understood')
@@ -132,7 +137,10 @@ class ModemHandler(threading.Thread):
     writepins('1') 
 
   def get_status_string(self):
-    return("GSM: %d %s Cell: %s " % (self.signalStrength,self.networkName, self.cellInfo))
+    if self.signalStrength < 100:
+      return("GSM: %d @ %s Cell: %s " % (self.signalStrength,self.networkName, self.cellInfo))
+    else:
+      return("GSM: PPP @ %s Cell: %s " % (self.networkName, self.cellInfo))
 
   def get_record(self):
     return("%d\t%s\t" % (self.signalStrength, self.cellInfo))
@@ -148,10 +156,12 @@ class ModemHandler(threading.Thread):
     logging.info("Modem thread running")
     global modem
     global ppp_requested
+    global sms_queue
+
     rxListenLength = 5
     init_count = 0
     
-    while self.running
+    while self.running:
       while self.running and not ppp_requested and init_count > -1:
         try:
           init_count = init_count + 1
@@ -175,7 +185,7 @@ class ModemHandler(threading.Thread):
           #waitForNetworkCoverage()
           self.signalStrength = modem.signalStrength
           self.networkName = modem.networkName
-          #modem.write("AT+CFUN=0")
+          #modem.write("AT+CFUN=1")
           serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
           if serving_cell:
             mcc=serving_cell.group(1)
@@ -186,23 +196,37 @@ class ModemHandler(threading.Thread):
 
           # Comms are handled elsewhere so we could eventually just sleep, waiting
           #time.sleep(rxListenLength)
+          if (self.signalStrength > 1):
+            while (len(sms_queue) > 0):
+              text=sms_queue.pop()
+              if (text == 'position'):
+                send_position_via_sms(default_destination)  
+              else:
+                try:
+                  modem.sendSms(default_destination, text, waitForDeliveryReport=False)
+                except (CommandError, TimeoutException):
+                  sms_queue.append('text')
+          else:
+            logging.info('Waiting for better network coverage')
           modem.rxThread.join(rxListenLength) 
         except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
-          logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
+          logging.error("rxThread died.") #: {0}".format(sys.exc_info()[0]))
 
-      modem.close()
-      logging.info("Modem interface closed.")
       # If PPP was requested, now it's the time
-      if ppp_requested:
+      if ppp_requested and self.signalStrength > 5:
         try:
+          self.signalStrength = 101
+          logging.info('Launching PPP session.') 
           logging.info('Waiting for network coverage')
-          waitForNetworkCoverage()
-          logging.info('Launching PPP session.' % rc)
-          rc = subprocess.call(['timeout','360','pon'])
-          logging.info('PPP ended with code %d.' % rc)
-        except:
-          logging.info('PPP link attempt failed')
+          #waitForNetworkCoverage()
+          modem.close()
+          logging.info("Modem interface closed.")
+          rc = subprocess.check_output(['/usr/bin/timeout','360','/usr/bin/pon'], stderr=subprocess.STDOUT)
+          logging.info('PPP ended: %s' % s)
+        except subprocess.CalledProcessError as e:
+          logging.info('PPP ended: %s' % e)
         ppp_requested = False
+        init_count = 0
       #end of if
     #end of while
 
@@ -225,7 +249,7 @@ if __name__ == '__main__':
       # GSM module data
       logging.info(gsmpart.get_status_string())
       time.sleep(10)
-      send_position_via_sms(default_destination)
+      #send_position_via_sms(default_destination)
   except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting.")
     if gsmpart.running:

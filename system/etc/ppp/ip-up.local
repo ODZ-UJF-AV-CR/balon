@@ -1,0 +1,8 @@
+#!/bin/sh
+# Requires the key to be setup correctly
+
+while true
+do
+  /usr/bin/ssh -i /home/odroid/.ssh/id_balon -v -N -R 8122:localhost:22 balon@bobr.ujf.cas.cz
+  sleep 1
+done
