@@ -120,6 +120,9 @@ class ModemHandler(threading.Thread):
 
   def get_record(self):
     return("%d\t%s\t" % (self.signalStrength, self.cellInfo))
+ 
+  def get_header(self):
+    return('GSM_signal\tGSM_CellInfo\t')
 
   def run(self):
     # Initialize the GPIO interface

@@ -16,28 +16,20 @@ from time import *
 import time
 import threading
 
-import pygame
-import pygame.camera
-#from pygame.locals import *
-
-## Modem
-from gsmmodem.modem import GsmModem, SentSms
-from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException
-###
-
-gpsd = None #seting the global variable
-
 from pymlab import config
 
 import m_pcrd
+import m_gps
+import m_gsm
+import m_webcam
+import m_cpu
 
-#### Settings #####
+#### Settings (webcam is separate) #####
 data_dir="/data/balon/"
 log_dir=data_dir
 default_destination = "+420777642401"
 
 round_beat = 5 # Seconds for one round of sensors capture
-
 
 # Logging
 logging.basicConfig(level=logging.INFO,
@@ -56,257 +48,54 @@ logging.getLogger('').addHandler(console)
 #                    format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
 #                    )
 
-# Webcam #
-#webcam_enabled=False
-webcam_enabled=True
-imagedir=data_dir+"img/"
-video_devices=["/dev/video0","/dev/video1"]
-resolutionx=1280 # Max 1600
-resolutiony=720 # Max 480
-skipframes=50
-beattime=10
+###################################################################
+# Parts
+cputemp_enabled = True
 
-# GSM module #
-PORT = '/dev/ttyACM99'
-BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
-PIN = None # SIM card PIN (if any)
-
+###################################################################
 # PCRD readout
-logging.info('Starting PCRD readout')
-pcrd = m_pcrd.PCRD_poller()
-pcrd.data_dir = data_dir
-pcrd.start()
+pcrd_enabled=False
+if pcrd_enabled:
+  logging.info('Starting PCRD readout')
+  pcrd = m_pcrd.PCRD_poller()
+  pcrd.data_dir = data_dir
+  pcrd.start()
+else:
+  logging.info("PCRD data capture disabled.")
 
-###########################
-def make_selfie():
- for video_device in video_devices:
-  device_number = video_device[-1]
-  if (not device_number.isdigit()):
-    logging.error("Webcam device specification likely wrong, last char not a number: %s." % (video_device))
-    continue
-  else:
-    device_number = int(device_number)
-  
-  logging.debug("Initializing camera {0} at {1} for {2}x{3} px JPEG every {4} s.".format(device_number,video_device,resolutionx,resolutiony,beattime))
-  try:
-    cam = pygame.camera.Camera(video_device,(resolutionx,resolutiony))
-    cam.start()
+###################################################################
+# Webcam handler
+webcam_enabled=True
+if webcam_enabled:
+  logging.info('Starting webcam handler')
+  webcam = m_webcam.WebCamCapture()
+  m_webcam.imagedir=data_dir+"img/"
+  webcam.start()
+else:
+  logging.info("Webcam image capture disabled.")
 
-  except SystemError as e:
-    logging.error(e)
-    return(1)
+###################################################################
+# GSM module 
+gsm_enabled = True
+if gsm_enabled:
+  logging.info("Initializing GSM interface.")
+  gsmpart = m_gsm.ModemHandler()
+  gsmpart.start()
+else:
+  logging.info("GSM interface disabled.")
 
-  # Wait for initialization
-  while (not cam.query_image()):
-    time.sleep(0.1)
+###################################################################
+# GPS thread initialization and startup
+gps_enabled = True
+if gps_enabled:
+  logging.info("Initializing GPS interface.")
+  gpsp = m_gps.GpsPoller() # create the thread
+  gpsp.start() # start it up
+else:
+  logging.info("GPS interface disabled.")
 
-  # Skip required number of frames
-  if (skipframes > 0):
-    logging.debug("Waiting for image stabilization - skipping {0} frames.".format(skipframes))
-    for i in range(skipframes):
-      try:
-        img = cam.get_image()
-      except pygame.error:
-        logging.error("Error during frame capture: {0}".format(sys.exc_info()[0]))
-        return(2)
-
-  # Construct file name
-  savefname=imagedir+('cam%d-' % (device_number))+time.strftime('%F_%T.jpg', time.gmtime())
-  logging.info("Capturing {0}x{1} frame to {2}.".format(resolutionx,resolutiony,savefname))
-  try:
-    ensure_dir(savefname)
-    img = cam.get_image()
-    pygame.image.save(img, savefname)
-    cam.stop()
-  except pygame.error as e:
-    logging.error("Capture failed: {0}".format(e))
-
-####################################################################
-class WebCamCapture(threading.Thread):
-  def __init__(self):
-    logging.debug("WebCam thread initialization")
-    threading.Thread.__init__(self)
-    self.running = True
-    self.name = 'WebCam'
-
-  def run(self):
-    logging.debug("Thread starting")
-    while self.running:
-      make_selfie()
-      zerotime=time.time()
-      selfie_time=time.time()-zerotime
-      if (selfie_time > beattime):
-        logging.warn("Webcam image capture takes too long: {0} s, can not pad the beats to {1}.".format(selfie_time, beattime))
-      else:
-        logging.debug("Capture took {0} s. Next beat in {1} s to pad to {2} s.".format(selfie_time, beattime-selfie_time, beattime))
-        time.sleep(beattime-selfie_time)
-
-    logging.debug("Thread exiting")
-
-#### ensure_dir ####
-def ensure_dir(f):
-    d = os.path.dirname(f)
-    if not os.path.exists(d):
-          logging.info("Creating directory: {0}".format(d))
-          os.makedirs(d)
-
-#### GPS Poller #####################################################
-class GpsPoller(threading.Thread):
-  def __init__(self):
-    logging.info("Starting GPS poller thread")
-    threading.Thread.__init__(self)
-    global gpsd #bring it in scope
-    gpsd = gps(mode=WATCH_ENABLE) #starting the stream of info
-    self.current_value = None
-    self.running = True #setting the thread running to true
-
-  def run(self):
-    logging.info("GPS poller thread running")
-    global gpsd
-    while gpsp.running:
-      gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
-
-#### Send position in a SMS ########################################
-def send_position_via_sms(destination):
-    logging.info("Will send position via SMS to: {0}.".format(destination))
-    # Get current time
-
-    try:
-       # Get a GPS fix, prepare a string with it
-       if (sv('GPS_Fix') < 3):
-         timestring = time.strftime('%T', time.gmtime())
-         smstext = "{0} GSM: {1}".format(timestring, sv('GSM_CellInfo')) 
-       else:
-         timestring = time.strftime('%T', time.gmtime())
-         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3}".format(timestring, gpsd.fix.altitude, gpsd.fix.latitude,gpsd.fix.longitude)
-
-       if ('Bat_Temp' in sensors) and ('Bat_Charge' in sensors):
-         smstext = smstext + (" BT{0} BCH{1} ".format(sv('Bat_Temp'), sv('Bat_Charge')))
-       else:
-         smstext = smstext + " NoBatInfo"
-
-       sms = modem.sendSms(destination, smstext, waitForDeliveryReport=True)
-    except TimeoutException:
-       logging.warn('Failed to send message to {0}: the send operation timed out'.format(call.number))
-    else:
-       if sms.report:
-            logging.info('Message sent{0}'.format(' and delivered OK.' if sms.status == SentSms.DELIVERED else ', but delivery failed.'))
-       else:
-            logging.info('Message sent.')
-
-
-#### Incoming call handler #########################################
-def handleIncomingCall(call):
-    if call.ringCount == 1:
-        logging.info('New incoming call, waiting for CLIP.'.format(call.number))
-    elif call.ringCount <= 3 and not (call.number is None):
-        logging.info('Got CLIP, Will send position to {0}.'.format(call.number))
-        destination=call.number
-        call.hangup()
-        send_position_via_sms(destination)
-    elif call.ringCount > 3:
-        call.hangup()
-        send_position_via_sms(default_destination)
-    else:
-        logging.info('Call is ringing and we still have no CLIP.')
-         
-# Modem GPIO reset handler
-def writepins(pin_value):
-    pin = open("/sys/class/gpio/gpio204/value","w")
-    pin.write(pin_value)
-    pin.close()
-
-def exportpins():
-    logging.debug("Exporting GPIO pin")
-    GPIO_EXPORT_PATH=os.path.normpath('/sys/class/gpio/export')
-    GPIO_MODE_PATH= os.path.normpath('/sys/class/gpio/gpio204/direction')
-    if (os.path.isdir('/sys/class/gpio/gpio204')):
-      logging.debug("/sys/class/gpio/gpio204 directory already exists, export not needed")
-    else:
-      try:
-        file = open(GPIO_EXPORT_PATH, 'w')
-        file.write("204")          ## export the pin to the usermode
-        file.close()
-
-        file = open(GPIO_MODE_PATH, 'r+')
-        file.write("out")          ## make the pin as output
-        file.close()
-      except:
-        logging.error("Trouble exporting GPIO pin for modem reset.")
-
-class ModemHandler(threading.Thread):
-  # +CGED: MCC:230, MNC:  3, LAC:878c, CI:2a95,
-  CGED_REGEX = re.compile(r'^\+CGED:\s*MCC:([^,]+),\s*MNC:\s*([^,]+),\s*LAC:\s*([^,]+),\s*CI:\s*([^,]+),.*')
-  def __init__(self):
-    logging.info("Starting Modem handler thread")
-    threading.Thread.__init__(self)
-    global modem
-    self.running = True #setting the thread running to true
-    self.name = "Modem"
-    self.networkName = "none"
-    self.signalStrength = -1
-    self.cellInfo = "none"
- 
-  def modemPowerCycle(self):
-    # Should reset the modem using hardware pin
-    exportpins()
-    writepins('0')
-    sleep(2)
-    writepins('1') 
-
-  def run(self):
-    # Initialize the GPIO interface
-    exportpins()
-    writepins('1')
-    
-    logging.info("Modem thread running")
-    global modem
-    rxListenLength = 10
-    init_count = 0
-    
-    while self.running and init_count > -1:
-      try:
-        init_count = init_count + 1
-        modem = GsmModem(PORT, BAUDRATE, incomingCallCallbackFunc=handleIncomingCall)
-        logging.info("Initializing modem, try {0}.".format(init_count))
-        modem.connect(PIN)
-        init_count = -1
-      except OSError,TimeoutException:
-        # OSError means pppd is likely running
-        logging.error("Failed to initialize the GSM module.")
-        try:
-          modem.close()
-        except AttributeError:
-          True 
-        time.sleep(5)
-        #self.modemPowerCycle()
-
-    logging.info('Waiting for incoming calls...')
-    while self.running:
-      try:
-        #waitForNetworkCoverage()
-        self.signalStrength = modem.signalStrength
-        self.networkName = modem.networkName
-        #modem.write("AT+CFUN=0")
-        serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
-        if serving_cell:
-          mcc=serving_cell.group(1)
-          mnc=serving_cell.group(2)
-          lac=serving_cell.group(3)
-          ci=serving_cell.group(4)
-          self.cellInfo="{0}/{1}/{2}/{3}".format(mcc, mnc, lac, ci)
-
-        # Comms are handled elsewhere so we could eventually just sleep, waiting
-        #time.sleep(rxListenLength)
-        modem.rxThread.join(rxListenLength) 
-      except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
-        logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
-
-    modem.close()
-    logging.info("Modem closed.")
 
 #### Script Arguments ###############################################
-
 cfg_number = 0
 port = 4
 sensors = {}
@@ -352,28 +141,6 @@ altimet = cfg.get_device("altimet")
 sht_sensor = cfg.get_device("sht25")
 guage = cfg.get_device("guage")
 
-time.sleep(0.5)
-
-# GPS thread initialization and startup
-gpsp = GpsPoller() # create the thread
-gpsp.start() # start it up
-
-# Webcam thread initialization and startup
-if webcam_enabled:
-  logging.info("Initializing image capture.")
-  pygame.init()
-  pygame.camera.init()
-  webcam = WebCamCapture()
-  webcam.looptime = beattime
-  webcam.start()
-else:
-  logging.info("Webcam image capture disabled.")
-
-# GSM call/sms handler
-logging.info("Initializing GSM support.")
-gsmpart = ModemHandler()
-gsmpart.start()
-
 # Get sensor value or -1 if not available
 def sv(sname):
   if sname in sensors:
@@ -384,6 +151,7 @@ def sv(sname):
 
 #### Data Logging ###################################################
 
+time.sleep(0.5)
 logging.info("# Data acquisition system started")
 
 #gpsp.join()
@@ -392,45 +160,32 @@ runstart=time.time()
 
 try:
     with open(data_dir+"data_log.csv", "a") as f:
-	f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_climb\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
+        write_header=True
+      
         while True:
             round_start=time.time()
             sensors['Epoch'] = round_start
             # System UTC epoch time
+            csv_header = 'Epoch\t'
             lr="%d\t" % round_start
  
             # GPS data 
-            logging.debug("Retrieving: GPS data")
-            sensors['GPS_Time']=gpsd.utc
-            sensors['GPS_Fix']=gpsd.fix.mode
-            sensors['GPS_Alt']=gpsd.fix.altitude
-            sensors['GPS_Lat']=gpsd.fix.latitude
-            sensors['GPS_Lon']=gpsd.fix.longitude
-            sensors['GPS_Speed']=gpsd.fix.speed
-            sensors['GPS_Climb']=gpsd.fix.climb 
+            if gps_enabled:
+              logging.info(gpsp.get_status_string())
+              csv_header = csv_header + gpsp.get_header()
+              lr = lr + gpsp.get_record()
 
-            logging.info("%d GPSTime: %s GPSfix: %d Alt: %.1f m Speed: %.1f m/s Climb: %.1f m/s Lat: %f Lon: %f " % (time.time()-runstart, sv('GPS_Time'), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
-            lr = lr + ("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (str(sv('GPS_Time')), sv('GPS_Fix'), sv('GPS_Alt'), sv('GPS_Speed'), sv('GPS_Climb'), sv('GPS_Lat'), sv('GPS_Lon')))
             # GSM module data
-            logging.info("GSM: %d %s Cell: %s " % (gsmpart.signalStrength,gsmpart.networkName, gsmpart.cellInfo))
-            lr = lr + ("%d\t%s\t" % (gsmpart.signalStrength, gsmpart.cellInfo))
-            sensors['GSM_Signal'] = gsmpart.signalStrength
-	    sensors['GSM_CellInfo'] = gsmpart.cellInfo
+            if gsm_enabled:
+              logging.info(gsmpart.get_status_string())
+              csv_header = csv_header + gsmpart.get_header()
+              lr = lr + gsmpart.get_record()
 
             # CPU Temperature
-            logging.debug("Retrieving: CPU thermal sensor data")
-            try:
-              with open("/sys/class/thermal/thermal_zone0/temp") as cputempf:
-                cputemp=cputempf.readline()
-                cputempf.close()
-                cputemp=float(cputemp.rstrip())/1000.0
-                logging.info("CPUTemp %.1f C " % cputemp)
-                sensors['CPU_Temp'] = cputemp
-            except IOError as e:
-              logging.error('CPU temperature sensors unavailable %s' % e)
-              sensors['CPU_Online'] = False
-            
-            lr=lr+"%.2f\t" % (sv('CPU_Temp'))
+            if cputemp_enabled:
+              logging.info(m_cpu.get_status_string())
+              csv_header = csv_header + m_cpu.get_header()
+              lr=lr+m_cpu.get_record()
 
             # Altimet
             logging.debug("Retrieving: Altimet temperature and pressure data")
@@ -447,6 +202,7 @@ try:
               logging.error('Altimet sensors unavailable %s' % e)
               sensors['Altimet_Online'] = False
 
+            csv_header = csv_header + 'T_Altimet\tPressure\t'
             lr=lr+("%.3f\t%d\t" % (sv('Altimet_Temp'), sv('Altimet_Press')))
 
             # SHT sensor	
@@ -463,6 +219,7 @@ try:
               logging.error('SHT sensors unavailable as %s' % e)
               sensors['SHT_Online'] = False
 
+            csv_header = csv_header + 'T_SHT\tHumidity\t'
             lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_Hum')))
 
             # Battery sensors
@@ -476,19 +233,23 @@ try:
               sensors['Bat_AvgI'] = guage.AverageCurrent()
               sensors['Bat_Charge'] = guage.StateOfCharge()
               sensors['Bat_Online'] = True
-
               logging.info("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
                               (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
             except IOError as e:
               logging.error('Battery sensors unavailable: %s' % e)
               sensors['Bat_Online'] = False
-            
+
+            csv_header = csv_header + 'T_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct'
             lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
 
             # End of sensors, write out data
             lr=lr + "\n"
             sensors['Ready']=True
             logging.info("Writing to file --------------------------------------------------------------------------------")
+            if write_header:
+	      #f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_climb\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
+              f.write('%s\n' % csv_header)
+              write_header = False
             f.write(lr) 
 	    f.flush()
             round_timeleft = round_beat + round_start - time.time()
@@ -499,20 +260,30 @@ except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting:")
     #f.write("\r\n")
     f.close()
-    if pcrd.isAlive():
-      pcrd.running = False
-      logging.info("Requesting PCRD thread to shut down.")
-    if gsmpart.running:
-      gsmpart.running = False
-      #gsmpart.join()
-      logging.info("Requesting GSM thread to shut down.")
+    if pcrd_enabled:
+      try:
+        pcrd.running = False
+        logging.info("Requesting PCRD thread to shut down.")
+      except NameError:
+        logging.error("PCRD enabled, but not initialized?")     
+    if gsm_enabled:
+      try:
+        gsmpart.running = False
+        logging.info("Requesting GSM thread to shut down.")
+      except NameError:
+        logging.error("GSM part enabled, but not initialized?")     
     if webcam_enabled:
-      webcam.running = False
-      #webcam.join() # wait for WebCam thread
-      logging.info("Requesting Webcam thread shut down.")
-    if gpsp.running:
-      gpsp.running = False
-      #gpsp.join()   # wait for GPS poller thread
-      logging.info("GPS thread asked to shut down.")
+      try: 
+        webcam.running = False
+        logging.info("Requesting Webcam thread shut down.")
+      except NameError:
+        logging.error("Webcam part enabled, but not initialized?")
+    if gps_enabled:
+      try:
+        gpsp.running = False
+        logging.info("GPS thread asked to shut down.")
+      except NameError:
+        logging.error("GPS part enabled, but not initialized?")
+
     sys.exit(0)
 

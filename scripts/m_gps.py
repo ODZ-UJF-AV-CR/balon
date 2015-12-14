@@ -19,6 +19,7 @@ gpsd = None #seting the global variable
 data = {}
 lv_data = {}
 
+
 def dv(sname):
   if sname in data:
     return(data[sname])
@@ -70,7 +71,10 @@ class GpsPoller(threading.Thread):
     return(status_string)
 
   def get_record(self):
-    return(str("%s\t%d\t%.1f\t%.1f\t%.1f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Climb'), dv('GPS_Lat'), dv('GPS_Lon'))))
+    return(str("%s\t%d\t%.1f\t%.1f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Lat'), dv('GPS_Lon'))))
+
+  def get_header(self):
+    return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tLatitude\tLongitude\t')
 
   def split_gps_time(gpstime, self):
     logging.info(lv('GPS_Time'))

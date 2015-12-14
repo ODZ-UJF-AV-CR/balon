@@ -6,6 +6,15 @@ import sys
 import logging
 import time
 
+def get_header():
+   return("T_CPU\t")
+
+def get_status_string():
+   return('CPU Temperature: %.2f C' % get_cputemp())
+
+def get_record():
+   return('%.2f\t' % get_cputemp())
+
 def get_cputemp():
   # CPU Temperature
    logging.debug("Retrieving: CPU thermal sensor data")
@@ -14,12 +23,10 @@ def get_cputemp():
        cputemp=cputempf.readline()
        cputempf.close()
        cputemp=float(cputemp.rstrip())/1000.0
-       logging.debug('CPU Temperature %.2f C' % cputemp)
-       sensors['CPU_Temp'] = cputemp
-       return(True)
+       return(cputemp)
    except IOError:
      logging.critical('CPU Temperature sensor not available.')
-     return(False)
+     return(-999.0)
 
 #### main ####
 if __name__ == '__main__':
@@ -30,6 +37,5 @@ if __name__ == '__main__':
 
   logging.info('Starting CPU temperature readout')
   while True:
-    if get_cputemp():
-      logging.info("CPU Temp: %.2f" % sensors['CPU_Temp'])
+    logging.info(get_status_string())
     time.sleep(2)
