@@ -63,7 +63,7 @@ imagedir=data_dir+"img/"
 video_devices=["/dev/video0","/dev/video1"]
 resolutionx=1280 # Max 1600
 resolutiony=720 # Max 480
-skipframes=5
+skipframes=50
 beattime=10
 
 # GSM module #
@@ -287,6 +287,7 @@ class ModemHandler(threading.Thread):
         #waitForNetworkCoverage()
         self.signalStrength = modem.signalStrength
         self.networkName = modem.networkName
+        #modem.write("AT+CFUN=0")
         serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
         if serving_cell:
           mcc=serving_cell.group(1)
