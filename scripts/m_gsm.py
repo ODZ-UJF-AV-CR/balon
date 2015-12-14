@@ -16,7 +16,7 @@ import m_gps
 
 ## Modem
 from gsmmodem.modem import GsmModem, SentSms
-from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException
+from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException, CommandError
 ###
 
 modem=None
@@ -169,7 +169,7 @@ class ModemHandler(threading.Thread):
         # Comms are handled elsewhere so we could eventually just sleep, waiting
         #time.sleep(rxListenLength)
         modem.rxThread.join(rxListenLength) 
-      except (InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
+      except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
         logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
 
     modem.close()

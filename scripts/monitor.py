@@ -24,6 +24,14 @@ import m_gsm
 import m_webcam
 import m_cpu
 
+###################################################################
+# Parts
+pcrd_enabled    = False
+webcam_enabled  = True
+gsm_enabled     = False
+gps_enabled     = True
+cputemp_enabled = True
+
 #### Settings (webcam is separate) #####
 data_dir="/data/balon/"
 log_dir=data_dir
@@ -49,12 +57,7 @@ logging.getLogger('').addHandler(console)
 #                    )
 
 ###################################################################
-# Parts
-cputemp_enabled = True
-
-###################################################################
 # PCRD readout
-pcrd_enabled=False
 if pcrd_enabled:
   logging.info('Starting PCRD readout')
   pcrd = m_pcrd.PCRD_poller()
@@ -65,7 +68,6 @@ else:
 
 ###################################################################
 # Webcam handler
-webcam_enabled=True
 if webcam_enabled:
   logging.info('Starting webcam handler')
   webcam = m_webcam.WebCamCapture()
@@ -76,7 +78,6 @@ else:
 
 ###################################################################
 # GSM module 
-gsm_enabled = True
 if gsm_enabled:
   logging.info("Initializing GSM interface.")
   gsmpart = m_gsm.ModemHandler()
@@ -86,7 +87,6 @@ else:
 
 ###################################################################
 # GPS thread initialization and startup
-gps_enabled = True
 if gps_enabled:
   logging.info("Initializing GPS interface.")
   gpsp = m_gps.GpsPoller() # create the thread
