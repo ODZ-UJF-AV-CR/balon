@@ -61,7 +61,7 @@ if pcrd_enabled:
   pcrd.data_dir = data_dir
   pcrd.start()
 else:
-  logging.info("PCRD data capture disabled.")
+  logging.warning("PCRD data capture disabled.")
 
 ###################################################################
 # Webcam handler
@@ -72,7 +72,7 @@ if webcam_enabled:
   m_webcam.imagedir=data_dir+"img/"
   webcam.start()
 else:
-  logging.info("Webcam image capture disabled.")
+  logging.warning("Webcam image capture disabled.")
 
 ###################################################################
 # GSM module 
@@ -82,7 +82,7 @@ if gsm_enabled:
   gsmpart = m_gsm.ModemHandler()
   gsmpart.start()
 else:
-  logging.info("GSM interface disabled.")
+  logging.warning("GSM interface disabled.")
 
 ###################################################################
 # GPS thread initialization and startup
@@ -92,7 +92,7 @@ if gps_enabled:
   gpsp = m_gps.GpsPoller() # create the thread
   gpsp.start() # start it up
 else:
-  logging.info("GPS interface disabled.")
+  logging.warning("GPS interface disabled.")
 
 
 #### Script Arguments ###############################################
@@ -197,10 +197,8 @@ try:
               logging.info("AltiTemp: %.2f C Press: %d " % (t1, p1))
               sensors['Altimet_Temp'] = t1
               sensors['Altimet_Press'] = p1
-              sensors['Altimet_Online'] = True
             except IOError:
               logging.error('Altimet sensors unavailable %s' % e)
-              sensors['Altimet_Online'] = False
 
             csv_header = csv_header + 'T_Altimet\tPressure\t'
             lr=lr+("%.3f\t%d\t" % (sv('Altimet_Temp'), sv('Altimet_Press')))
@@ -214,10 +212,8 @@ try:
               logging.info("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
               sensors['SHT_Temp'] = temperature
               sensors['SHT_Hum'] = humidity
-              sensors['SHT_Online'] = True
             except IOError as e:
               logging.error('SHT sensors unavailable as %s' % e)
-              sensors['SHT_Online'] = False
 
             csv_header = csv_header + 'T_SHT\tHumidity\t'
             lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_Hum')))
@@ -232,12 +228,10 @@ try:
               sensors['Bat_V'] = guage.Voltage()
               sensors['Bat_AvgI'] = guage.AverageCurrent()
               sensors['Bat_Charge'] = guage.StateOfCharge()
-              sensors['Bat_Online'] = True
               logging.info("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
                               (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
             except IOError as e:
               logging.error('Battery sensors unavailable: %s' % e)
-              sensors['Bat_Online'] = False
 
             csv_header = csv_header + 'T_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct'
             lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
