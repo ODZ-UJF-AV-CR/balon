@@ -18,26 +18,26 @@ import threading
 
 from pymlab import config
 
+import m_settings as g
 import m_pcrd
 import m_gps
 import m_gsm
 import m_webcam
 import m_cpu
+import m_i2c
 
 ###################################################################
 # Parts
-pcrd_enabled    = False
-webcam_enabled  = True
-gsm_enabled     = False
+pcrd_enabled    = True
+webcam_enabled  = False
+gsm_enabled     = True
 gps_enabled     = True
 cputemp_enabled = True
+i2c_enabled     = True
 
 #### Settings (webcam is separate) #####
-data_dir="/data/balon/"
-log_dir=data_dir
-default_destination = "+420777642401"
-
-round_beat = 5 # Seconds for one round of sensors capture
+#data_dir="/data/balon/"
+log_dir=g.data_dir
 
 # Logging
 logging.basicConfig(level=logging.INFO,
@@ -61,7 +61,7 @@ logging.getLogger('').addHandler(console)
 if pcrd_enabled:
   logging.info('Starting PCRD readout')
   pcrd = m_pcrd.PCRD_poller()
-  pcrd.data_dir = data_dir
+  pcrd.data_dir = g.data_dir
   pcrd.start()
 else:
   logging.warning("PCRD data capture disabled.")
@@ -71,7 +71,7 @@ else:
 if webcam_enabled:
   logging.info('Starting webcam handler')
   webcam = m_webcam.WebCamCapture()
-  m_webcam.imagedir=data_dir+"img/"
+  m_webcam.imagedir=g.image_dir
   webcam.start()
 else:
   logging.warning("Webcam image capture disabled.")
@@ -94,77 +94,17 @@ if gps_enabled:
 else:
   logging.warning("GPS interface disabled.")
 
-
-#### Script Arguments ###############################################
-cfg_number = 0
-port = 4
-sensors = {}
-
-#### Sensor Configuration ###########################################
-
-cfglist=[
-    config.Config(
-        i2c = {
-            "port": port,
-        },
-
-        bus = [
-            {
-                "type": "i2chub",
-                "address": 0x73,
-                
-                "children": [
-                    {"name": "altimet", "type": "altimet01" , "channel": 0, },   
-        	    	{"name": "sht25", "type": "sht25", "channel": 5, },
-                    {"name": "guage", "type": "lioncell", "channel": 3, },
-                ],
-            },
-        ],
-    ),
-]
-
-try:
-    cfg = cfglist[cfg_number]
-except IndexError:
-    logging.critical("Invalid configuration number.")
-    sys.exit(1)
-
-# Initialize the hub
-logging.debug('Initializing I2C sensors')
-try:
-  cfg.initialize()
-except IOError as e:
-  logging.critical('Whole I2C bus unavailable: %s' % e)
-
-# Initialize 
-altimet = cfg.get_device("altimet")
-sht_sensor = cfg.get_device("sht25")
-guage = cfg.get_device("guage")
-
-# Get sensor value or -1 if not available
-def sv(sname):
-  if sname in sensors:
-    return(sensors[sname])
-  else:
-    return(-1)
-
-
 #### Data Logging ###################################################
-
-time.sleep(0.5)
 logging.info("# Data acquisition system started")
-
-#gpsp.join()
-
 runstart=time.time()
 
 try:
-    with open(data_dir+"data_log.csv", "a") as f:
+    with open(g.data_dir+"data_log.csv", "a") as f:
         write_header=True
       
         while True:
             round_start=time.time()
-            sensors['Epoch'] = round_start
+
             # System UTC epoch time
             csv_header = 'Epoch\t'
             lr="%d\t" % round_start
@@ -187,66 +127,21 @@ try:
               csv_header = csv_header + m_cpu.get_header()
               lr=lr+m_cpu.get_record()
 
-            # Altimet
-            logging.debug("Retrieving: Altimet temperature and pressure data")
-            try:
-              altimet.route()
-              (t1, p1) = altimet.get_tp()
-              if (p1 == 0):
-                logging.error('Altimet malfunction - no data from pressure indicator.')
-              logging.info("AltiTemp: %.2f C Press: %d " % (t1, p1))
-              sensors['Altimet_Temp'] = t1
-              sensors['Altimet_Press'] = p1
-            except IOError:
-              logging.error('Altimet sensors unavailable %s' % e)
-
-            csv_header = csv_header + 'T_Altimet\tPressure\t'
-            lr=lr+("%.3f\t%d\t" % (sv('Altimet_Temp'), sv('Altimet_Press')))
-
-            # SHT sensor	
-            logging.debug("Retrieving: SHT sensor data")
-            try:
-              sht_sensor.route()	    	
-              temperature = sht_sensor.get_temp()
-              humidity = sht_sensor.get_hum()
-              logging.info("SHTTemp: %.2f C Humid: %.1f " % (temperature, humidity))
-              sensors['SHT_Temp'] = temperature
-              sensors['SHT_Hum'] = humidity
-            except IOError as e:
-              logging.error('SHT sensors unavailable as %s' % e)
-
-            csv_header = csv_header + 'T_SHT\tHumidity\t'
-            lr=lr+("%.2f\t%.1f\t" % (sv('SHT_Temp'), sv('SHT_Hum')))
-
-            # Battery sensors
-            logging.debug("Retrieving: Battery sensor data")
-            try:
-              guage.route()
-              sensors['Bat_Temp'] = guage.getTemp()
-              sensors['Bat_RemCap'] = guage.getRemainingCapacity()
-              sensors['Bat_FullChargeCapacity'] = guage.FullChargeCapacity()
-              sensors['Bat_V'] = guage.Voltage()
-              sensors['Bat_AvgI'] = guage.AverageCurrent()
-              sensors['Bat_Charge'] = guage.StateOfCharge()
-              logging.info("BatTemp: %.2f C RemCap: %d mAh FullCap: %d mAh U: %d mV I: %d mA Charge: %.2f %%" % 
-                              (sensors['Bat_Temp'], sensors['Bat_RemCap'], sensors['Bat_FullChargeCapacity'], sensors['Bat_V'], sensors['Bat_AvgI'], sensors['Bat_Charge']))
-            except IOError as e:
-              logging.error('Battery sensors unavailable: %s' % e)
-
-            csv_header = csv_header + 'T_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct'
-            lr=lr + ("%.2f\t%d\t%d\t%d\t%d\t%.2f" % (sv('Bat_Temp'), sv('Bat_RemCap'), sv('Bat_FullChargeCapacity'), sv('Bat_V'), sv('Bat_AvgI'), sv('Bat_Charge')))
+            # i2c sensors
+            if i2c_enabled:
+	      i2c=m_i2c.get_i2c_data()
+	      csv_header += i2c['header']
+	      lr += i2c['record'] 
 
             # End of sensors, write out data
             lr=lr + "\n"
-            sensors['Ready']=True
-            logging.info("Writing to file --------------------------------------------------------------------------------")
+            logging.info("-------------- Writing to file ------------------------")
             if write_header:
-	      #f.write("\nEpoch\tGPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_climb\tLatitude\tLongitude\tGSM_signal\tGSM_CellInfo\tT_CPU\tT_Altimet\tPressure\tT_SHT\tHumidity\tT_Bat\tRemCap_mAh\tCap_mAh\tU_mV\tI_mA\tCharge_pct\n")
               f.write('%s\n' % csv_header)
               write_header = False
             f.write(lr) 
 	    f.flush()
-            round_timeleft = round_beat + round_start - time.time()
+            round_timeleft = g.round_beat + round_start - time.time()
             if (round_timeleft > 0):
               time.sleep(round_timeleft)
 
