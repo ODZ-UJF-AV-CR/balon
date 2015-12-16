@@ -14,6 +14,7 @@ import threading
 import subprocess
 
 import m_gps
+import m_i2c
 
 ## Modem
 from gsmmodem.modem import GsmModem, SentSms
@@ -24,12 +25,22 @@ modem=None
 ppp_requested = False
 
 sms_queue = []
+#'position']
 
 # GSM module #
 default_destination = "+420777642401"
 PORT = '/dev/ttyACM99'
 BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
 PIN = None # SIM card PIN (if any)
+
+data = {}
+
+# Get sensor value or -1 if not available
+def dv(sname):
+  if sname in data:
+    return(data[sname])
+  else:
+    return(-1)
 
 #### Send position in a SMS ########################################
 def send_position_via_sms(destination):
@@ -41,15 +52,15 @@ def send_position_via_sms(destination):
        # Get a GPS fix, prepare a string with it
        if (m_gps.lv('GPS_Fix') < 3):
          timestring = time.strftime('%T', time.gmtime())
-         smstext = "{0} GSM: {1}".format(timestring, gsmpart.cellInfo) 
+         smstext = "{0} GSM: {1}".format(timestring, data['cellInfo']) 
        else:
          timestring = time.strftime('%T', time.gmtime())
-         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"))
+         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3} S{4}C{5}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), dv('signalStrength'), dv('cellInfo'))
 
-       #if ('Bat_Temp' in sensors) and ('Bat_Charge' in sensors):
-       #  smstext = smstext + (" BT{0} BCH{1} ".format(sv('Bat_Temp'), sv('Bat_Charge')))
-       #else:
-       #  smstext = smstext + " NoBatInfo"
+       if ('Bat_Temp' in m_i2c.data) and ('Bat_Charge' in m_i2c.data):
+         smstext = smstext + (" BT{0} BCH{1} ".format(m_i2c.dv('Bat_Temp'), m_i2c.dv('Bat_Charge')))
+       else:
+         smstext = smstext + " NoBatInfo"
 
        sms = modem.sendSms(destination, smstext, waitForDeliveryReport=False)
     except TimeoutException:
@@ -109,7 +120,7 @@ def handleSms(sms):
     sms_queue.append('position')
   elif sms.text.lower() == 'ppp':
     logging.info('SMS: GSM uplink requested')
-    sms_queue.append('Activating PPP uplink.')
+    sms_queue.append('Activating PPP uplink')
     ppp_requested = True
   else:
     logging.info('SMS: Command not understood')
@@ -185,6 +196,8 @@ class ModemHandler(threading.Thread):
           #waitForNetworkCoverage()
           self.signalStrength = modem.signalStrength
           self.networkName = modem.networkName
+          data['signalStrength'] = self.signalStrength
+          data['networkName'] = self.networkName
           #modem.write("AT+CFUN=1")
           serving_cell=self.CGED_REGEX.match(modem.write("AT+CGED=3")[0])
           if serving_cell:
@@ -193,10 +206,11 @@ class ModemHandler(threading.Thread):
             lac=serving_cell.group(3)
             ci=serving_cell.group(4)
             self.cellInfo="{0}/{1}/{2}/{3}".format(mcc, mnc, lac, ci)
+            data['cellInfo'] = self.cellInfo
 
           # Comms are handled elsewhere so we could eventually just sleep, waiting
           #time.sleep(rxListenLength)
-          if (self.signalStrength > 1):
+          if (self.signalStrength > 5):
             while (len(sms_queue) > 0):
               text=sms_queue.pop()
               if (text == 'position'):
@@ -205,19 +219,28 @@ class ModemHandler(threading.Thread):
                 try:
                   modem.sendSms(default_destination, text, waitForDeliveryReport=False)
                 except (CommandError, TimeoutException):
-                  sms_queue.append('text')
+                  sms_queue.append(text)
           else:
             logging.info('Waiting for better network coverage')
           modem.rxThread.join(rxListenLength) 
         except (CommandError, InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException):
-          logging.error("rxThread died.") #: {0}".format(sys.exc_info()[0]))
+          logging.error("rxThread died: {0}".format(sys.exc_info()[0]))
+          time.sleep(5)
+          init_count = 0
 
       # If PPP was requested, now it's the time
-      if ppp_requested and self.signalStrength > 5:
+      if ppp_requested and self.signalStrength > 5 and init_count < 0:
         try:
           self.signalStrength = 101
           logging.info('Launching PPP session.') 
-          logging.info('Waiting for network coverage')
+          while (len(sms_queue) > 0):
+            logging.info('==== Sending PPP activation SMS =====')
+            text=sms_queue.pop()
+            try:
+              modem.sendSms(default_destination, text, waitForDeliveryReport=False)
+              time.sleep(1)
+            except (CommandError, TimeoutException):
+              sms_queue.append(text)
           #waitForNetworkCoverage()
           modem.close()
           logging.info("Modem interface closed.")
@@ -225,6 +248,7 @@ class ModemHandler(threading.Thread):
           logging.info('PPP ended: %s' % s)
         except subprocess.CalledProcessError as e:
           logging.info('PPP ended: %s' % e)
+        sms_queue.append('PPP connection terminated')
         ppp_requested = False
         init_count = 0
       #end of if
@@ -249,6 +273,8 @@ if __name__ == '__main__':
       # GSM module data
       logging.info(gsmpart.get_status_string())
       time.sleep(10)
+      ppp_requested = True
+      time.sleep(600)
       #send_position_via_sms(default_destination)
   except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting.")
