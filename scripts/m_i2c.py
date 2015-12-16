@@ -122,6 +122,7 @@ def get_i2c_data():
   status = {}
   status['header'] = csv_header
   status['record'] = lr
+  status['data'] = dict(data)
   return(status)
 
 #### main ####
@@ -137,6 +138,8 @@ if __name__ == '__main__':
 
     print i2c['header']
     print i2c['record']
+   
+    print i2c['data']['Bat_V']
     
     tts = g.round_beat - (time.time()-round_start)
     if (tts > 0):
