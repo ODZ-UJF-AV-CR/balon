@@ -28,12 +28,14 @@ import m_i2c
 
 ###################################################################
 # Parts
-pcrd_enabled    = True
-webcam_enabled  = False
+pcrd_enabled    = False
+webcam_enabled  = True
 gsm_enabled     = True
 gps_enabled     = True
 cputemp_enabled = True
 i2c_enabled     = True
+
+low_power_mode = False
 
 #### Settings (webcam is separate) #####
 #data_dir="/data/balon/"
@@ -47,7 +49,7 @@ logging.basicConfig(level=logging.INFO,
 
 # define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
-console.setLevel(logging.INFO)
+console.setLevel(logging.WARN)
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
@@ -67,16 +69,6 @@ else:
   logging.warning("PCRD data capture disabled.")
 
 ###################################################################
-# Webcam handler
-if webcam_enabled:
-  logging.info('Starting webcam handler')
-  webcam = m_webcam.WebCamCapture()
-  m_webcam.imagedir=g.image_dir
-  webcam.start()
-else:
-  logging.warning("Webcam image capture disabled.")
-
-###################################################################
 # GSM module 
 if gsm_enabled:
   logging.info("Initializing GSM interface.")
@@ -93,6 +85,14 @@ if gps_enabled:
   gpsp.start() # start it up
 else:
   logging.warning("GPS interface disabled.")
+
+###################################################################
+# Webcam handler
+if webcam_enabled:
+  logging.info('Webcam handler startup delayed.')
+else:
+  logging.warning("Webcam image capture disabled.")
+
 
 #### Data Logging ###################################################
 logging.info("# Data acquisition system started")
@@ -144,6 +144,69 @@ try:
             round_timeleft = g.round_beat + round_start - time.time()
             if (round_timeleft > 0):
               time.sleep(round_timeleft)
+
+            # If voltage is low, set the low_power mode flag
+            if i2c_enabled:
+              if 'Bat_V' in i2c['data']:
+                V = i2c['data']['Bat_V']
+              else:
+                V = None
+
+              logging.warn('Voltage: {0} {1}'.format(V, g.U_lpm))
+              if (V < g.U_lpm[0]) and low_power_mode:
+                # Switch to low power mode 
+                logging.debug('Status: Low power mode ON')
+              elif (V < g.U_lpm[0]) and not low_power_mode:
+                # Switch to low power mode 
+                logging.warn('Change: Low power mode ON')
+                low_power_mode = True
+              elif (V < g.U_lpm[1]) and low_power_mode:
+                logging.debug('Status: Low power mode and not enough V to disable it.')
+              elif not low_power_mode:
+                logging.debug('Status: Low power mode OFF')
+              else: 
+                # Exit low power mode
+                logging.warn('Change: Low power mode OFF')
+                low_power_mode = False
+
+            else:
+              logging.info('i2c interface disabled, low power mode switching not available')
+
+            # Start/stop the webcam using thresholds
+            if webcam_enabled:
+               if low_power_mode:
+                 # Should be stopped
+                 try:
+                   if webcam.running and webcam.isAlive:
+                     webcam.running = False
+                     logging.warn('Change: Webcam running and alive, asked to stop.')
+                   elif webcam.isAlive():
+                     logging.warn('Webcam thread pending shutdown.')
+                   else:
+                     logging.warn('Webcam thread stopped.')
+                 except NameError:
+                   logging.info('OK: Webcam thread down due to low power mode.')
+               else:
+                 # Should be running
+                 logging.warn('Webcam should be on. Checking.')
+                 try:
+                   if webcam.running and webcam.isAlive():
+                     # Thread is alive and running 
+                     logging.warn('OK: Webcam thread alive and running.')
+                   elif webcam.isAlive() and not webcam.running:
+                     logging.warn('ERR: Webcam is alive, but not marked as running.')
+                   elif webcam.running and not webcam.isAlive():
+                     logging.warn('ERR: Webcam marked as running, but thread is not alive.')
+                   else:
+                     logging.warn('Change: Restarting webcam')
+                     webcam = m_webcam.WebCamCapture()
+                     m_webcam.imagedir=g.image_dir
+                     webcam.start()
+                 except NameError as err:
+                   logging.warn('Change: Enabling webcam thread as %s' % err)
+                   webcam = m_webcam.WebCamCapture()
+                   m_webcam.imagedir=g.image_dir
+                   webcam.start()
 
 except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting:")
