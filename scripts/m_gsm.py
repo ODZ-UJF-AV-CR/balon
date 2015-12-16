@@ -24,8 +24,7 @@ from gsmmodem.exceptions import InterruptedException, PinRequiredError, Incorrec
 modem=None
 ppp_requested = False
 
-sms_queue = []
-#'position']
+sms_queue = ['position']
 
 # GSM module #
 default_destination = "+420777642401"
@@ -55,12 +54,19 @@ def send_position_via_sms(destination):
          smstext = "{0} GSM: {1}".format(timestring, data['cellInfo']) 
        else:
          timestring = time.strftime('%T', time.gmtime())
-         smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3} S{4}C{5}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), dv('signalStrength'), dv('cellInfo'))
+         #smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3} S{4}C{5}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), dv('signalStrength'), dv('cellInfo'))
+         smstext = "{0} h{1} http://www.google.com/maps/place/{2},{3} Spd{4} Tr{5} Cl{6} {7}ID{8}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_Climb'), dv('signalStrength'), dv('cellInfo'))
+
+       if len(smstext) > 130:
+           smstext = "Alt{1} Lat{2} Lon{3} v{4} Tr{5} Cl{6} {7}ID{8}".format(m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_Climb'), dv('signalStrength'), dv('cellInfo'))
 
        if ('Bat_Temp' in m_i2c.data) and ('Bat_Charge' in m_i2c.data):
          smstext = smstext + (" BT{0} BCH{1} ".format(m_i2c.dv('Bat_Temp'), m_i2c.dv('Bat_Charge')))
        else:
          smstext = smstext + " NoBatInfo"
+
+       logging.warn('SMS text length {0}'.format(len(smstext)))
+       logging.warn('SMS: {0}'.format(smstext))
 
        sms = modem.sendSms(destination, smstext, waitForDeliveryReport=False)
     except TimeoutException:
@@ -257,7 +263,7 @@ class ModemHandler(threading.Thread):
 #### main ####
 if __name__ == '__main__':
   # Logging
-  logging.basicConfig(level=logging.DEBUG,
+  logging.basicConfig(level=logging.INFO,
     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
     )
   try:
@@ -272,9 +278,13 @@ if __name__ == '__main__':
     while gsmpart.running:
       # GSM module data
       logging.info(gsmpart.get_status_string())
+      i2c = m_i2c.get_i2c_data()
+
       time.sleep(10)
-      ppp_requested = True
-      time.sleep(600)
+
+#      time.sleep(10)
+#      ppp_requested = True
+#      time.sleep(600)
       #send_position_via_sms(default_destination)
   except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting.")
