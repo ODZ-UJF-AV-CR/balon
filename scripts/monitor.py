@@ -28,7 +28,7 @@ import m_i2c
 
 ###################################################################
 # Parts
-pcrd_enabled    = False
+pcrd_enabled    = True
 webcam_enabled  = True
 gsm_enabled     = True
 gps_enabled     = True
@@ -152,7 +152,7 @@ try:
               else:
                 V = None
 
-              logging.warn('Voltage: {0} {1}'.format(V, g.U_lpm))
+              #logging.warn('Voltage: {0} {1}'.format(V, g.U_lpm))
               if (V < g.U_lpm[0]) and low_power_mode:
                 # Switch to low power mode 
                 logging.debug('Status: Low power mode ON')
@@ -183,16 +183,16 @@ try:
                    elif webcam.isAlive():
                      logging.warn('Webcam thread pending shutdown.')
                    else:
-                     logging.warn('Webcam thread stopped.')
+                     logging.info('Webcam thread is stopped.')
                  except NameError:
                    logging.info('OK: Webcam thread down due to low power mode.')
                else:
                  # Should be running
-                 logging.warn('Webcam should be on. Checking.')
+                 logging.debug('Webcam should be on. Checking.')
                  try:
                    if webcam.running and webcam.isAlive():
                      # Thread is alive and running 
-                     logging.warn('OK: Webcam thread alive and running.')
+                     logging.debug('OK: Webcam thread alive and running.')
                    elif webcam.isAlive() and not webcam.running:
                      logging.warn('ERR: Webcam is alive, but not marked as running.')
                    elif webcam.running and not webcam.isAlive():
@@ -209,7 +209,7 @@ try:
                    webcam.start()
 
 except (KeyboardInterrupt, SystemExit):
-    logging.error("Exiting:")
+    logging.error("Exiting.")
     #f.write("\r\n")
     f.close()
     if pcrd_enabled:

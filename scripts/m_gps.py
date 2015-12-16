@@ -51,11 +51,19 @@ class GpsPoller(threading.Thread):
       #logging.debug("Retrieving GPS data.")
       gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
       data['GPS_Time']=gpsd.utc
+      if (len(data['GPS_Time']) == 0):
+        data['GPS_Time'] = -1
       data['GPS_Fix']=gpsd.fix.mode
       data['GPS_Alt']=gpsd.fix.altitude
       data['GPS_Lat']=gpsd.fix.latitude
       data['GPS_Lon']=gpsd.fix.longitude
       data['GPS_Speed']=gpsd.fix.speed
+      data['GPS_Track']=gpsd.fix.track
+      data['GPS_Climb']=gpsd.fix.climb
+      data['GPS_epx']=gpsd.fix.epx # Position error [m]
+      data['GPS_epv']=gpsd.fix.epv # Altitude error [m]
+      data['GPS_eps']=gpsd.fix.eps # Speed error [m/s]
+
       if (data['GPS_Fix'] > 2):
         for k in data.keys():
           lv_data[k] = data[k]  
@@ -63,18 +71,18 @@ class GpsPoller(threading.Thread):
       #logging.debug(self.get_lv_status_string())
 
   def get_status_string(self):
-    status_string = "GPSTime: %s Fix: %d Alt: %.1f m Speed: %.1f m/s Lat: %f Lon: %f " % (dv('GPS_Time'), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Lat'), dv('GPS_Lon'))
+    status_string = "GPSTime: %s Fix: %d Alt: %f (%f) m Track: %f Climb: %f Speed: %f (%f) m/s Lat: %f Lon: %f (%f m)" % (dv('GPS_Time'), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_epv'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_Speed'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'), dv('GPS_epx'))
     return(status_string)
 
   def get_lv_status_string(self):
-    status_string = "LV GPSTime: %s Fix: %d Alt: %.1f m Speed: %.1f m/s Lat: %f Lon: %f " % (lv('GPS_Time'), lv('GPS_Fix'), lv('GPS_Alt'), lv('GPS_Speed'), lv('GPS_Lat'), lv('GPS_Lon'))
+    status_string = "LV GPSTime: %s Fix: %d Alt: %f (%f) m Track: %f Climb: %f Speed: %f (%f) m/s \nLat: %f Lon: %f (%f m)" % (lv('GPS_Time'), lv('GPS_Fix'), lv('GPS_Alt'), lv('GPS_epv'), lv('GPS_Track'), lv('GPS_Climb'), lv('GPS_Speed'), lv('GPS_eps'), lv('GPS_Lat'), lv('GPS_Lon'), lv('GPS_epx'))
     return(status_string)
 
   def get_record(self):
-    return(str("%s\t%d\t%.1f\t%.1f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Lat'), dv('GPS_Lon'))))
+    return(str("%s\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_epx'), dv('GPS_epv'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'))))
 
   def get_header(self):
-    return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tLatitude\tLongitude\t')
+    return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_track\tGPS_climb\tGPS_epx\tGPS_epv\tGPS_eps\tLatitude\tLongitude\t')
 
   def split_gps_time(gpstime, self):
     logging.info(lv('GPS_Time'))
@@ -89,8 +97,11 @@ if __name__ == '__main__':
     # GPS thread initialization and startup
     gpsp = GpsPoller() # create the thread
     gpsp.start() # start it up
+    print "%-24s %3s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s" % ('UTC','Fix','Alt','Speed','Track','Climb','PosErr','AltErr','SpeedErr','Latitude','Longitude')
     while gpsp.running:
       time.sleep(1)
+      print "%24s %3d %10f %10f %10f %10f %10f %10f %10f %10f %10f" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_epx'), dv('GPS_epv'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'))
+      #print gpsp.get_record()
   except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting:")
     if gpsp.running:
