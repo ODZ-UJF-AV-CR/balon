@@ -8,8 +8,30 @@ import datetime
 import threading
 import logging
 import spidev
+import math
 
-# Default data dir:
+def channels_summary(channels):
+  # Prebinovana a preskalovana data z kanalu do histogramu, v nule je suma
+  if (len(channels) < 1):
+    logging.error('No data read from PCRD?')
+    return('FAIL')
+
+  bins = 30 
+  binwidth = float(len(channels))/(bins)
+  aggr = [0] * (bins+1)
+  #print '%d bins %.1f ch each' % (bins, binwidth)
+
+  for ch in range(1,len(channels)-1):
+    binnr=int(math.floor(ch/binwidth))
+    if binnr > bins-1:
+      logging.error('Binning issue %d' % binnr)
+      binnr = bins-1
+    #aggr[binnr+1]+=ch*channels[ch]
+    #aggr[0]+=ch*channels[ch]
+    aggr[binnr+1]+=channels[ch]
+    aggr[0]+=(1+binnr)*channels[ch]
+  
+  return(aggr)
 
 #### PCRD poller ####
 class PCRD_poller(threading.Thread):
@@ -38,7 +60,7 @@ class PCRD_poller(threading.Thread):
         #spi.mode = 2
         #spi.bits_per_word = 8
         #spi.cshigh = False
-        bits = 13	                                                                # number of bits from A/D
+        bits = 13	                                                        # number of bits from A/D
         while self.running:
           roundstart = time.time()
           channels = [0] * (2**bits)						# number of channels
@@ -51,7 +73,8 @@ class PCRD_poller(threading.Thread):
           pf.write((' %s\n' % (' '.join(str(x) for x in channels))))
           pf.flush()
           message = str(channels[:30])    # print first 30 channels
-          logging.info(message)
+          logging.info('Ch:  ' + message)
+          logging.info('Sum: ' + str(channels_summary(channels)))
 
     except IOError as e:
       logging.critical("%s" % e)
