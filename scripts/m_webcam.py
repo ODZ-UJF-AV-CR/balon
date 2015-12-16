@@ -120,8 +120,26 @@ if __name__ == '__main__':
     pygame.camera.init()
     webcam = WebCamCapture()
     webcam.start()
-    while webcam.running:
-      time.sleep(1)
+    time.sleep(60)
+
+    while True:
+      if webcam.isAlive():
+	logging.info('xxxxxxxxxxxxxxxxxx Disabling webcam')
+	webcam.running = False
+	time.sleep(30) 
+      else:
+        logging.error("You only die once.")
+
+      if not webcam.isAlive():
+	logging.info('xxxxxxxxxxxxxxxxxx Enabling webcam')
+	pygame.init()
+	pygame.camera.init()
+	webcam = WebCamCapture()
+	webcam.start()
+        time.sleep(30)
+      else:
+        logging.error("You cannot live twice.")
+    
   except (KeyboardInterrupt, SystemExit):
     logging.info("Exiting.")
     if webcam.running:
