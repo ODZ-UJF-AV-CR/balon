@@ -135,6 +135,8 @@ def handleSms(sms):
   else:
     logging.info('SMS: Command not understood')
     
+def get_header():
+  return('GSM_signal\tGSM_CellInfo\t')
 
 class ModemHandler(threading.Thread):
   # +CGED: MCC:230, MNC:  3, LAC:878c, CI:2a95,
@@ -170,8 +172,6 @@ class ModemHandler(threading.Thread):
   def get_record(self):
     return("%d\t%s\t" % (self.signalStrength, self.cellInfo))
  
-  def get_header(self):
-    return('GSM_signal\tGSM_CellInfo\t')
 
   def run(self):
     # Initialize the GPIO interface
@@ -185,7 +185,7 @@ class ModemHandler(threading.Thread):
     global sms_queue
     global beat
 
-    rxListenLength = 5
+    rxListenLength = 10
     init_count = 0
     
     while self.running:
@@ -229,10 +229,14 @@ class ModemHandler(threading.Thread):
           # Comms are handled elsewhere so we could eventually just sleep, waiting
           #time.sleep(rxListenLength)
           if (self.signalStrength > 5):
+            sent_position = 0
             while (len(sms_queue) > 0):
               text=sms_queue.pop()
-              if (text == 'position'):
+              if (text == 'position') and sent_position:
+                logging.info('Not resending position in the same interval')
+              elif (text == 'position'):
                 send_position_via_sms(default_destination)  
+                sent_position = 1
               else:
                 try:
                   modem.sendSms(default_destination, text, waitForDeliveryReport=False)
