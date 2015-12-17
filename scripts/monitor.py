@@ -28,8 +28,8 @@ import m_i2c
 
 ###################################################################
 # Parts
-pcrd_enabled    = True
-webcam_enabled  = True
+pcrd_enabled    = False
+webcam_enabled  = False
 gsm_enabled     = True
 gps_enabled     = True
 cputemp_enabled = True
@@ -49,7 +49,7 @@ logging.basicConfig(level=logging.INFO,
 
 # define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
-console.setLevel(logging.WARN)
+console.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
@@ -129,9 +129,9 @@ try:
 
             # i2c sensors
             if i2c_enabled:
-	      i2c=m_i2c.get_i2c_data()
-	      csv_header += i2c['header']
-	      lr += i2c['record'] 
+              i2c=m_i2c.get_i2c_data()
+              csv_header += i2c['header']
+              lr += i2c['record'] 
 
             # End of sensors, write out data
             lr=lr + "\n"
@@ -139,11 +139,15 @@ try:
             if write_header:
               f.write('%s\n' % csv_header)
               write_header = False
+              
             f.write(lr) 
-	    f.flush()
+      	    f.flush()
             round_timeleft = g.round_beat + round_start - time.time()
             if (round_timeleft > 0):
               time.sleep(round_timeleft)
+
+            ######################################################################
+            # SWITCH LOW POWER MODE ON AND OFF
 
             # If voltage is low, set the low_power mode flag
             if i2c_enabled:
@@ -171,6 +175,7 @@ try:
 
             else:
               logging.info('i2c interface disabled, low power mode switching not available')
+            #========================================================================
 
             # Start/stop the webcam using thresholds
             if webcam_enabled:
