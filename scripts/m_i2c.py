@@ -20,10 +20,17 @@ from pymlab import config
 
 import m_settings as g
 
+# Mystic op
+NaN = float('nan')
+def isnan(x): return str(x) == 'nan'
+
+avg_cr = None      # Moving average climb rate
+data = {}
+data['Altimet_Climb'] = NaN
+
 #### Sensor Configuration ###########################################
 cfg_number = 0
 port = 4
-data = {}
 
 cfglist=[config.Config(i2c = {"port": port,},
 bus = [
@@ -52,15 +59,42 @@ def dv(sname):
   else:
     return(-1)
 
+#### Rough pressure to height conversion ###################################################
+def press_to_height(pPa):
+  # KPB dle ICAO
+  t0 = 15.0 # C
+  p0 = 1013.250 # hPa
+  kC = 273.15
+  
+  if pPa > 1.0:
+     p = pPa/100.0
+     height = (kC + t0)/0.0065
+     height = height * (1 - math.pow(p/p0,1.0/5.255))
+     return(height)
+  else:
+    return(NaN) 
+
 #### i2c Data Logging ###################################################
 def get_i2c_data():
   global status
+  global avg_cr
+  global data
+  
+  avg_over = 10.0    # Average over last ten measurements
+  
   # Initialize the hub
   logging.debug('Initializing I2C bus')
   try:
     cfg.initialize()
   except IOError as e:
     logging.critical('Whole I2C bus unavailable: %s' % e)
+
+  if 'Epoch' in data and 'Altimet_Alt' in data:
+    #logging.info('Setting olds')
+    data['Prev_Epoch'] = data['Epoch'] 
+    data['Prev_Alt'] = data['Altimet_Alt'] 
+
+  data['Epoch'] = time.time()
 
   # Initialize 
   altimet = cfg.get_device("altimet")
@@ -77,14 +111,33 @@ def get_i2c_data():
   try:
     altimet.route()
     (t1, p1) = altimet.get_tp()
-    logging.info("AltiTemp: %.2f C Press: %d " % (t1, p1))
     data['Altimet_Temp'] = t1
     data['Altimet_Press'] = p1
+    data['Altimet_Alt'] = press_to_height(p1) 
+    logging.info("AltiTemp: %.2f C  Press: %d Pa  Barometric height: %f m" % (t1, p1, data['Altimet_Alt']))
+
+    # Calculate moving average ascent rate
+    if (avg_cr == None) and not 'Prev_Alt' in data:
+      data['Prev_Alt'] = data['Altimet_Alt']
+    elif 'Prev_Alt' in data and 'Prev_Epoch' in data:
+      #logging.info('Alt {0} - Alt0 {1} / {2} {3}'.format(data['Altimet_Alt'], data['Prev_Alt'], data['Epoch'], data['Prev_Epoch']))
+      #logging.info('Delta t: {0}'.format(data['Epoch'] - data['Prev_Epoch']))
+      #logging.info('Delta h: {0}'.format(data['Altimet_Alt'] - data['Prev_Alt']))
+      climb = (data['Altimet_Alt'] - data['Prev_Alt'])/(data['Epoch'] - data['Prev_Epoch'])
+      if (avg_cr == None):
+        avg_cr = climb
+      else:
+        #logging.info('avg_cr {0} avg_over {1} climb {2}'.format(avg_cr, avg_over, climb))
+        avg_cr = (avg_cr*(avg_over - 1.0) + climb)/avg_over
+      data['Altimet_Climb'] = avg_cr
+    logging.info('Barometric climb rate: {0} m/s'.format(avg_cr))
+    
   except IOError:
     logging.error('Altimet data unavailable %s' % e)
+    data.pop('Prev_Alt', None)
 
-  csv_header = csv_header + 'T_Altimet\tPressure\t'
-  lr=lr+("%.3f\t%d\t" % (dv('Altimet_Temp'), dv('Altimet_Press')))
+  csv_header = csv_header + 'T_Altimet\tPressure\tAlt_Alt'
+  lr=lr+("%.3f\t%d\t%.1f\t" % (dv('Altimet_Temp'), dv('Altimet_Press'), dv('Altimet_Alt')))
 
   # SHT sensor  
   logging.debug("Retrieving: SHT sensor data")
@@ -123,6 +176,7 @@ def get_i2c_data():
   status['header'] = csv_header
   status['record'] = lr
   status['data'] = dict(data)
+
   return(status)
 
 #### main ####
@@ -136,10 +190,12 @@ if __name__ == '__main__':
     round_start=time.time()
     i2c=get_i2c_data()
 
+    print "-----------------------------------------------------------------------"
     print i2c['header']
     print i2c['record']
+    print "-----------------------------------------------------------------------"
    
-    print i2c['data']['Bat_V']
+    #print i2c['data']['Bat_V']
     
     tts = g.round_beat - (time.time()-round_start)
     if (tts > 0):
