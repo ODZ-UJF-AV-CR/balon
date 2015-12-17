@@ -13,3 +13,5 @@ U_lpm = [8350, 8430] # Threshold to enter and exit the low power mode, in mV
 # Flight thresholds:
 #U_lpm = [7000,7300]
 
+# Modem
+default_destination = "+420777642401"
