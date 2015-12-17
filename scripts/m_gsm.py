@@ -57,10 +57,10 @@ def send_position_via_sms(destination):
        else:
          timestring = time.strftime('%T', time.gmtime())
          #smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3} S{4}C{5}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), dv('signalStrength'), dv('cellInfo'))
-         smstext = "{0} h{1} http://www.google.com/maps/place/{2},{3} Spd{4} Tr{5} Cl{6} {7}ID{8}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_Climb'), dv('signalStrength'), dv('cellInfo'))
+         smstext = "{0} h{1} http://www.google.com/maps/place/{2},{3} Spd{4} Tr{5} Cl{6} {7}ID{8}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.dv('GPS_AvgClimb'), dv('signalStrength'), dv('cellInfo'))
 
        if len(smstext) > 130:
-           smstext = "Alt{1} Lat{2} Lon{3} v{4} Tr{5} Cl{6} {7}ID{8}".format(m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_Climb'), dv('signalStrength'), dv('cellInfo'))
+           smstext = "Alt{1} Lat{2} Lon{3} v{4} Tr{5} Cl{6} {7}ID{8}".format(m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_AvgClimb'), dv('signalStrength'), dv('cellInfo'))
 
        if ('Bat_Temp' in m_i2c.data) and ('Bat_Charge' in m_i2c.data):
          smstext = smstext + (" BT{0} BCH{1} ".format(m_i2c.dv('Bat_Temp'), m_i2c.dv('Bat_Charge')))
