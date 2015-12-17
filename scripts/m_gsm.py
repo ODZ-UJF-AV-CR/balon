@@ -16,6 +16,8 @@ import subprocess
 import m_gps
 import m_i2c
 
+import m_settings as g
+
 ## Modem
 from gsmmodem.modem import GsmModem, SentSms
 from gsmmodem.exceptions import InterruptedException, PinRequiredError, IncorrectPinError, TimeoutException, CommandError
@@ -27,7 +29,7 @@ ppp_requested = False
 sms_queue = ['position']
 
 # GSM module #
-default_destination = "+420777642401"
+default_destination = g.default_destination
 PORT = '/dev/ttyACM99'
 BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
 PIN = None # SIM card PIN (if any)
