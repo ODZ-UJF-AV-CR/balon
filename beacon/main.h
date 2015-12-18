@@ -7,7 +7,7 @@
 #FUSES NOMCLR                   //Master Clear pin used for I/O
 #FUSES NOPROTECT                //Code not protected from reading
 #FUSES NOCPD                    //No EE protection
-#FUSES NOBROWNOUT                 //Reset when brownout detected
+#FUSES BROWNOUT                 //Reset when brownout detected
 #FUSES NOIESO                     //Internal External Switch Over mode enabled
 #FUSES NOFCMEN                    //Fail-safe clock monitor enabled
 #FUSES NOLVP                    //No low voltage prgming, B3(PIC16) or B5(PIC18) used for I/O
