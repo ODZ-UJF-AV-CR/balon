@@ -132,7 +132,7 @@ def get_i2c_data():
       data['Altimet_Climb'] = avg_cr
     logging.info('Barometric climb rate: {0} m/s'.format(avg_cr))
     
-  except IOError:
+  except IOError as e:
     logging.error('Altimet data unavailable %s' % e)
     data.pop('Prev_Alt', None)
 

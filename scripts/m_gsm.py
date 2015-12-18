@@ -12,6 +12,7 @@ import re
 import os
 import threading
 import subprocess
+import math
 
 import m_gps
 import m_i2c
@@ -27,6 +28,11 @@ modem=None
 ppp_requested = False
 beat = 0
 
+# TESTING 
+NaN = float('nan')
+test_alt = NaN
+test_cr = NaN
+
 sms_queue = []
 #'position']
 
@@ -39,6 +45,12 @@ PIN = None # SIM card PIN (if any)
 data = {}
 
 # Get sensor value or -1 if not available
+def dv(sname):
+  if sname in data:
+    return(data[sname])
+  else:
+    return(-1)
+
 def dv(sname):
   if sname in data:
     return(data[sname])
@@ -59,10 +71,24 @@ def send_position_via_sms(destination):
        else:
          timestring = time.strftime('%T', time.gmtime())
          #smstext = "{0} alt{1} http://www.google.com/maps/place/{2},{3} S{4}C{5}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), dv('signalStrength'), dv('cellInfo'))
-         smstext = "{0} h{1} http://www.google.com/maps/place/{2},{3} Spd{4} Tr{5} Cl{6} {7}ID{8}".format(timestring, m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.dv('GPS_AvgClimb'), dv('signalStrength'), dv('cellInfo'))
+         #smstext = "%s h%.1f http://www.google.com/maps/place/%f,%f" % (timestring, m_gps.lv("GPS_Alt")), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"))
+         #smstext += "%.2f %.1f %.1f" % (m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.dv('GPS_AvgClimb'))
+         #smstext += "%.1f %s" % (dv('signalStrength'), dv('cellInfo'))
+         try:
+            climb = '%.2f' % float(m_gps.dv('GPS_AvgClimb'))
+         except ValueError:
+            climb =  m_gps.dv('GPS_AvgClimb')
 
-       if len(smstext) > 130:
-           smstext = "Alt{1} Lat{2} Lon{3} v{4} Tr{5} Cl{6} {7}ID{8}".format(m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_AvgClimb'), dv('signalStrength'), dv('cellInfo'))
+         alt = m_gps.lv("GPS_Alt")
+
+         if not math.isnan(test_alt):
+           alt = test_alt
+           climb = test_cr
+
+         smstext = "{0} h{1} http://www.google.com/maps/place/{2},{3} Spd{4} Tr{5} Cl{6} {7}ID{8}".format(timestring, alt, m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), climb, dv('signalStrength'), dv('cellInfo'))
+
+       #if len(smstext) > 130:
+       #    smstext = "Alt{1} Lat{2} Lon{3} v{4} Tr{5} Cl{6} {7}ID{8}".format(m_gps.lv("GPS_Alt"), m_gps.lv("GPS_Lat"), m_gps.lv("GPS_Lon"), m_gps.lv('GPS_Speed'), m_gps.lv('GPS_Track'), m_gps.lv('GPS_AvgClimb'), dv('signalStrength'), dv('cellInfo'))
 
        if ('Bat_Temp' in m_i2c.data) and ('Bat_Charge' in m_i2c.data):
          smstext = smstext + (" BT{0} BCH{1} ".format(m_i2c.dv('Bat_Temp'), m_i2c.dv('Bat_Charge')))
@@ -185,7 +211,7 @@ class ModemHandler(threading.Thread):
     global sms_queue
     global beat
 
-    rxListenLength = 10
+    rxListenLength = 5
     init_count = 0
     
     while self.running:
