@@ -86,7 +86,7 @@ void main()
       b(0);  
       b(1);      
      
-      delay_ms(4000);
+      delay_ms(3000);
    }
 
 }
