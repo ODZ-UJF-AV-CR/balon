@@ -19,4 +19,4 @@ Gnuplot was used to plot the three altitude data sources together.
 System GPS lost fix at 12373.5 m and regained it at 12094.1 m during descent.
 Barometric altitude data show the SkyFox GPS lost signal before baloon burst and suggest that the burst happened at about 32-33 km altitude. 
 
-
+![Altitude profile](gps-altitudes.png)
