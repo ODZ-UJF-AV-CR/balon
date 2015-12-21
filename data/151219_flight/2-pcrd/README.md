@@ -11,3 +11,4 @@ pcrd_final.csv, with UTC time as first column.
 Finally, impulse counts from channels were aggregated using aggregate_pcrd.py
 to pcrd_aggr.csv and plotted via Gnuplot (plt script).
 
+![Altitude and dose profile](alt-dose.png)
