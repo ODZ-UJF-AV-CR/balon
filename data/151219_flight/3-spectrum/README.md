@@ -1,6 +1,6 @@
-# Balon data analyse
+# Ballon data analyse
 
-## Separation a noise
+## Separation of noise
 
 We can see a noise at low channels of the PCRD.
 
