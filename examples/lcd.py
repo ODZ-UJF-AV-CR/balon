@@ -30,21 +30,6 @@ cfg = config.Config(
     ],
 )
 
-'''
-cfg = config.Config(
-    i2c = {
-        "port": port,
-    },
-    bus = [
-        {
-            "name":          "lcd",
-            "type":        "i2clcd",
-            "address":        address,
-        },
-    ],
-)
-'''
-
 
 cfg.initialize()
 
@@ -57,24 +42,27 @@ n = 0
 #### Data Logging ###################################################
 
 try:
-    sys.stdout.write("Cvak\n")
-    sys.stdout.flush()
-    lcd.light(1)
-    time.sleep(0.5)
-    lcd.light(0)
+    while 1:    
+        sys.stdout.write("Cvak\n")
+        sys.stdout.flush()
+        lcd.init()
+        lcd.light(1)
+        time.sleep(0.5)
+        lcd.light(0)
 
-    lcd.puts('Cvak.')
+        lcd.puts('Cvak.')
 
-    time.sleep(0.5)
-    lcd.set_row2()
+        time.sleep(0.5)
+        lcd.set_row2()
 
-    lcd.light(1)
-    time.sleep(0.5)
-    lcd.light(0)
+        lcd.light(1)
+        time.sleep(0.5)
+        lcd.light(0)
 
-    sys.stdout.write("Hmmm\n")
-    sys.stdout.flush()
-    lcd.puts('Hmmm...')
+        sys.stdout.write("Hmmm\n")
+        sys.stdout.flush()
+        lcd.puts('Hmmm...')
+        time.sleep(2)
 
 except KeyboardInterrupt:
     sys.exit(0)
