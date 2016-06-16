@@ -21,6 +21,7 @@ from pymlab import config
 
 import m_settings as g
 #import m_pcrd
+import m_nb
 import m_gps
 import m_cpu
 import m_i2c
@@ -29,11 +30,11 @@ import m_reboot
 
 ###################################################################
 # Parts
-nb_enabled      = False
+nb_enabled      = True
 pcrd_enabled    = False
 gps_enabled     = True
 cputemp_enabled = True
-i2c_enabled     = False
+i2c_enabled     = True
 
 low_power_mode = False
 
@@ -156,12 +157,6 @@ except (KeyboardInterrupt, SystemExit):
       except NameError:
         logging.error("NB enabled, but not initialized?")     
          
-    if webcam_enabled:
-      try: 
-        webcam.running = False
-        logging.info("Requesting Webcam thread shut down.")
-      except NameError:
-        logging.error("Webcam part enabled, but not initialized?")
     if gps_enabled:
       try:
         gpsp.running = False
