@@ -31,8 +31,9 @@ import m_reboot
 # Parts
 nb_enabled      = False
 pcrd_enabled    = False
-gps_enabled     = True
-cputemp_enabled = True
+webcam_enabled  = False
+gps_enabled     = False
+cputemp_enabled = False
 i2c_enabled     = False
 
 low_power_mode = False

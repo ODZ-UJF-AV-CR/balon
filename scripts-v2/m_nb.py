@@ -24,7 +24,7 @@ class NB_poller(threading.Thread):
     global sensors
     logging.info("NB thread is starting.")
     try:
-      ser = serial.Serial('/dev/ttyUSB0')
+      ser = serial.Serial('/dev/ttyUSB0',timeout=5)
       logging.info("Port opened for NB readout: %s" % (ser.name))
       # Reset the buffer and set start time
       ser.write(b'x')

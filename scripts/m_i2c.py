@@ -30,17 +30,17 @@ data['Altimet_Climb'] = NaN
 
 #### Sensor Configuration ###########################################
 cfg_number = 0
-port = 4
+port = 1
 
 cfglist=[config.Config(i2c = {"port": port,},
 bus = [
     {
   "type": "i2chub",
-  "address": 0x73,
+  "address": 0x70,
   
   "children": [
-    {"name": "altimet", "type": "altimet01" , "channel": 0, },   
-    {"name": "sht25", "type": "sht25", "channel": 5, },
+    {"name": "altimet", "type": "altimet01" , "channel": 4, },   
+    {"name": "sht25", "type": "sht25", "channel": 7, },
     {"name": "gauge", "type": "lioncell", "channel": 3, },
   ],
     },
