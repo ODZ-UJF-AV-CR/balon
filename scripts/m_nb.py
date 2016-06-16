@@ -10,8 +10,20 @@ import logging
 import serial
 import math
 
+data = {}
+
+# Get sensor value or -1 if not available
+def dv(sname):
+  if sname in data:
+    return(data[sname])
+  else:
+    return(-1)
+
 #### NB poller ####
 class nb_poller(threading.Thread):
+  global status
+  global data
+
   # Default data dir
   data_dir = '/data/balon/'
   def __init__(self):
@@ -21,51 +33,70 @@ class nb_poller(threading.Thread):
       self.name = 'NB'
 
   def run(self):
-    global sensors
-    logging.info("NB thread is starting.")
-    try:
-      ser = serial.Serial('/dev/ttyUSB0',timeout=5)
-      logging.info("Port opened for NB readout: %s" % (ser.name))
-      # Reset the buffer and set start time
-      ser.write(b'x')
-      restime = time.time()
-    except IOError as e:
-      logging.critical('Failed to open for NB readout: %s' % e)
-      self.running = False
-
-    try:
-      ttsleep = 5 # Number of seconds to sleep
-      datafname = self.data_dir+"data_nb.csv"
-      logging.info('NB data will be appended to: %s' % (datafname))
-      with open(datafname, "a") as nbf:
-        while self.running:
-          # Sleep for a moment
-          #logging.info('Sleeping for: %i seconds.' % ( ttsleep ))
-          time.sleep(ttsleep)
-          # Readout
-          looptime = time.time()-restime
-          oldrestime = restime;
-          ser.write(b'r')
-          record = ser.readline().lstrip().rstrip()
-
+  
+    while self.running:
+        global sensors
+        logging.info("NB thread is starting.")
+        try:
+          ser = serial.Serial('/dev/ttyUSB0',timeout=5)
+          logging.info("Port opened for NB readout: %s" % (ser.name))
+          # Reset the buffer and set start time
           ser.write(b'x')
           restime = time.time()
+        #except IOError as e:
+        #  logging.critical('Failed to open for NB readout: %s' % e)
+        #  self.running = False
+        #  time.sleep(10)
+        #except KeyboardInterrupt:
+        #  ser.close()
+        #  nbf.close()
+        #  raise
 
-          records = record.split(',')  
-          logging.info("{} events recorded in {:.2f} since {:s}.".format(records[0], looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(oldrestime))))
+        #try:
+          ttsleep = 5 # Number of seconds to sleep
+          datafname = self.data_dir+"data_nb.csv"
+          logging.info('NB data will be appended to: %s' % (datafname))
+          with open(datafname, "a") as nbf:
+            while self.running:
+              # Sleep for a moment
+              #logging.info('Sleeping for: %i seconds.' % ( ttsleep ))
+              time.sleep(ttsleep)
+              # Readout
+              looptime = time.time()-restime
+              oldrestime = restime;
+              ser.write(b'r')
+              record = ser.readline().lstrip().rstrip()
 
-          if ((float(records[0]) > 900) and (ttsleep > 1)) :
-             ttsleep = math.floor(0.8*ttsleep); 
-             logging.warn("Risk of NB overflow decreasing NB readout delay to %f.", ttsleep)
-          
-          nbf.write(str(oldrestime) + "," + str(looptime) + "," + str(record) + "\n")
-          nbf.flush()
-          
-          message = 'not set'
+              #ser.write(b'x')
+              #time.sleep(1.0)
 
-    except IOError as e:
-      logging.critical("%s" % e)
-      self.running = False
+              restime = time.time()
+              ser.write(b'x')
+
+              records = record.split(',')  
+
+              suma = sum(map(int,records[1:]))
+
+              logging.info("{} events with total of {:.0f} recorded in {:.2f} since {:s}.".format(records[0], suma, looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(oldrestime))))
+
+              if ((float(records[0]) > 900) and (ttsleep > 1)) :
+                 ttsleep = math.floor(0.8*ttsleep); 
+                 logging.warn("Risk of NB overflow decreasing NB readout delay to %f.", ttsleep)
+              
+              nbf.write(str(oldrestime) + "," + str(looptime) + "," + str(record) + "\n")
+              nbf.flush()
+              
+              data['count'] = int(records[0])
+              data['sum'] = int(suma)
+
+              message = 'not set'
+
+        except IOError as e:
+          logging.critical("%s" % e)
+          #self.running = False
+          time.sleep(10)
+          ser.close()
+          nbf.close()
 
     ser.close()
     nbf.close()
@@ -89,6 +120,6 @@ if __name__ == '__main__':
   except (KeyboardInterrupt,SystemExit):
     nb.running = False
     logging.info("NB thread asked to exit")
- 
-  nb.join()
+  
+  #nb.join()
 

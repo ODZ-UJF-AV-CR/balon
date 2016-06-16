@@ -19,6 +19,8 @@ import threading
 from pymlab import config
 
 import m_settings as g
+import m_nb
+import m_gps 
 
 # Mystic op
 NaN = float('nan')
@@ -42,6 +44,7 @@ bus = [
     {"name": "altimet", "type": "altimet01" , "channel": 4, },   
     {"name": "sht25", "type": "sht25", "channel": 7, },
     {"name": "gauge", "type": "lioncell", "channel": 3, },
+    {"name": "lcd", "type": "i2clcd", "address": 0x27, "channel": 5, }
   ],
     },
 ],),]
@@ -74,6 +77,8 @@ def press_to_height(pPa):
   else:
     return(NaN) 
 
+
+
 #### i2c Data Logging ###################################################
 def get_i2c_data():
   global status
@@ -100,6 +105,7 @@ def get_i2c_data():
   altimet = cfg.get_device("altimet")
   sht_sensor = cfg.get_device("sht25")
   gauge = cfg.get_device("gauge")
+  lcd = cfg.get_device("lcd")
 
   time.sleep(0.5)
 
@@ -176,6 +182,42 @@ def get_i2c_data():
   status['header'] = csv_header
   status['record'] = lr
   status['data'] = dict(data)
+
+  try:
+    lcd.route()
+    lcd.reset()
+    lcd.init()
+
+    lcd.light(0)
+    time.sleep(0.2)
+
+    lcd.puts('B%.0f I%.0f' % (dv('Bat_Charge'), -1*dv('Bat_AvgI')))
+    lcd.set_row2()
+    time.sleep(0.1)
+
+    #lcd.puts(' BA%.0f' % (dv('Altimet_Alt')))
+    lcd.puts('H%.1f%%' % (dv('SHT_Hum')))
+
+    time.sleep(1.4)
+    #lcd.init()
+    #time.sleep(0.2)
+    #
+    # lcd.puts('NB %.0s' % (m_nb.dv('count')))
+    # lcd.set_row2()
+    # lcd.puts('S %.0s' % (m_nb.dv('sum')))
+
+    #time.sleep(1)
+
+    lcd.init()
+    time.sleep(0.2)
+    lcd.puts('GA%.0fm' % (m_gps.dv('GPS_Alt')))
+
+    lcd.set_row2()
+    lcd.puts(' FIX %.0f' % (m_gps.dv('GPS_Fix')))
+
+    lcd.light(1)
+  except IOError as e:
+    logging.error('LCD display not available: %s' % e)
 
   return(status)
 

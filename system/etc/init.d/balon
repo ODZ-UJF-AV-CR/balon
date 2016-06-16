@@ -14,7 +14,7 @@
 
 [ -f /etc/default/rcS ] && . /etc/default/rcS
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-DAEMON=/home/odroid/scripts/monitor.py
+DAEMON=/home/odroid/git/balon/scripts/monitor.py
 PIDDIR=/var/run
 PIDFILE=$PIDDIR/balon.pid
 DESC="balon data capture daemon"
@@ -22,7 +22,7 @@ NAME=balon
 
 PIDFILE=~odroid/monitor.pid
 
-GPSTIMESCRIPT=~odroid/scripts/gpstime.py
+GPSTIMESCRIPT=~odroid/git/balon/scripts/gpstime.py
 
 VERBOSE=yes
 case "$1" in
@@ -46,7 +46,7 @@ case "$1" in
         fi
 
         log_begin_msg "Starting $DESC" "$NAME"
-        start-stop-daemon --start -b --chuid odroid --quiet --pidfile $PIDFILE \
+        start-stop-daemon --start -b --chuid root --quiet --pidfile $PIDFILE \
            --exec $DAEMON -- --system $PARAMS
         log_end_msg $?
 
