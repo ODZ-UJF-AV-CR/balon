@@ -21,9 +21,7 @@ gpsd = None #seting the global variable
 data = {}
 lv_data = {}
 
-NaN = float('nan')
-#def isnan(x): return str(x) == 'nan'
-
+# Get sensor value or -1 if not available
 def dv(sname):
   if sname in data:
     return(data[sname])
@@ -35,6 +33,9 @@ def lv(sname):
     return(lv_data[sname])
   else:
     return(-1)
+
+NaN = float('nan')
+#def isnan(x): return str(x) == 'nan'
 
 #### GPS Poller #####################################################
 class GpsPoller(threading.Thread):
@@ -109,6 +110,12 @@ class GpsPoller(threading.Thread):
           lv_data[k] = data[k]  
       #logging.info(self.get_status_string())
       #logging.debug(self.get_lv_status_string())
+
+  def get_alt(self):
+    return(dv('GPS_Alt'))
+ 
+  def get_fix(self):
+    return(dv('GPS_Fix'))
 
   def get_status_string(self):
     status_string = "GPSTime: %s Fix: %d Alt: %f (%f) m Track: %f Climb: %f AvgClimb: %f Speed: %f (%f) m/s Lat: %f Lon: %f (%f m)" % (dv('GPS_Time'), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_epv'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_AvgClimb'), dv('GPS_Speed'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'), dv('GPS_epx'))

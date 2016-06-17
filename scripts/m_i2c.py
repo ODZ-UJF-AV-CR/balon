@@ -80,7 +80,7 @@ def press_to_height(pPa):
 
 
 #### i2c Data Logging ###################################################
-def get_i2c_data():
+def get_i2c_data(lcdargs):
   global status
   global avg_cr
   global data
@@ -196,24 +196,24 @@ def get_i2c_data():
     time.sleep(0.1)
 
     #lcd.puts(' BA%.0f' % (dv('Altimet_Alt')))
-    lcd.puts('H%.1f%%' % (dv('SHT_Hum')))
+    lcd.puts(' H%.1f%%' % (dv('SHT_Hum')))
+    time.sleep(1.5)
 
-    time.sleep(1.4)
-    #lcd.init()
-    #time.sleep(0.2)
-    #
-    # lcd.puts('NB %.0s' % (m_nb.dv('count')))
-    # lcd.set_row2()
-    # lcd.puts('S %.0s' % (m_nb.dv('sum')))
-
-    #time.sleep(1)
-
-    lcd.init()
-    time.sleep(0.2)
-    lcd.puts('GA%.0fm' % (m_gps.dv('GPS_Alt')))
-
-    lcd.set_row2()
-    lcd.puts(' FIX %.0f' % (m_gps.dv('GPS_Fix')))
+    row=1
+    print "LCD ARGS: " + ' '.join(lcdargs) + "\n"
+    for lcdarg in lcdargs:
+      if row == 1:
+	lcd.init()
+	time.sleep(0.2)
+	lcd.puts(lcdarg)
+	row = 2
+      else:
+	time.sleep(0.2)
+	lcd.set_row2()
+	time.sleep(0.2)
+	lcd.puts(lcdarg)
+	time.sleep(1.5)
+        row = 1
 
     lcd.light(1)
   except IOError as e:
@@ -230,7 +230,7 @@ if __name__ == '__main__':
 
   while True:
     round_start=time.time()
-    i2c=get_i2c_data()
+    i2c=get_i2c_data(['Ahoj','Bobe'])
 
     print "-----------------------------------------------------------------------"
     print i2c['header']

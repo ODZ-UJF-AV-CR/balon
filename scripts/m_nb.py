@@ -74,12 +74,13 @@ class nb_poller(threading.Thread):
               ser.write(b'x')
 
               records = record.split(',')  
+              irecords = map(int,records)
 
               suma = sum(map(int,records[1:]))
 
               logging.info("{} events with total of {:.0f} recorded in {:.2f} since {:s}.".format(records[0], suma, looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(oldrestime))))
 
-              if ((float(records[0]) > 900) and (ttsleep > 1)) :
+              if ((irecords[0] > 900) and (ttsleep > 1)) :
                  ttsleep = math.floor(0.8*ttsleep); 
                  logging.warn("Risk of NB overflow decreasing NB readout delay to %f.", ttsleep)
               
@@ -104,6 +105,13 @@ class nb_poller(threading.Thread):
     logging.info("NB poller thread exiting.")
     self.running = False
 # end of NB_poller
+
+  def get_nb_count(self):
+    return(dv('count'))
+
+  def get_nb_sum(self):
+    return(dv('sum'))
+
 
 #### main ####
 if __name__ == '__main__':

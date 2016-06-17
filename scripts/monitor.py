@@ -104,12 +104,17 @@ try:
             # System UTC epoch time
             csv_header = 'Epoch\t'
             lr="%d\t" % round_start
- 
+
+            lcdargs = []
+
             # GPS data 
             if gps_enabled:
               logging.info(gpsp.get_status_string())
               csv_header = csv_header + gpsp.get_header()
+              logging.info('GPS status: Alt %.2f Fix: %i' % (gpsp.get_alt(), gpsp.get_fix()))
               lr = lr + gpsp.get_record()
+              lcdargs.append('GA%.0fm' % (gpsp.get_alt()))
+              lcdargs.append(' FIX %.0f' % (gpsp.get_fix()))
 
             # CPU Temperature
             if cputemp_enabled:
@@ -117,9 +122,16 @@ try:
               csv_header = csv_header + m_cpu.get_header()
               lr=lr+m_cpu.get_record()
 
+            # NB sensors
+            if nb_enabled:
+              logging.info('NB says %i events with sum %i' % (nb.get_nb_count(), nb.get_nb_sum()))
+              lcdargs.append('NB %i' % (nb.get_nb_count()))
+              lcdargs.append(' S %i' % (nb.get_nb_sum()))
+
             # i2c sensors
             if i2c_enabled:
-              i2c=m_i2c.get_i2c_data()
+              print lcdargs
+              i2c=m_i2c.get_i2c_data(lcdargs)
               csv_header += i2c['header']
               lr += i2c['record'] 
 
