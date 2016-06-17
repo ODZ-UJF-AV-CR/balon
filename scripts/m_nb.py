@@ -80,15 +80,15 @@ class nb_poller(threading.Thread):
 
               logging.info("{} events with total of {:.0f} recorded in {:.2f} since {:s}.".format(records[0], suma, looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(oldrestime))))
 
-              if ((irecords[0] > 900) and (ttsleep > 1)) :
+              if ((irecords[0] > 950) and (ttsleep > 0.5)) :
                  ttsleep = math.floor(0.8*ttsleep); 
                  logging.warn("Risk of NB overflow decreasing NB readout delay to %f.", ttsleep)
               
               nbf.write(str(oldrestime) + "," + str(looptime) + "," + str(record) + "\n")
               nbf.flush()
               
-              data['count'] = int(records[0])
-              data['sum'] = int(suma)
+              data['count'] = 1.0*float(records[0])/ttsleep
+              data['sum'] = 1.0*float(suma)/ttsleep
 
               message = 'not set'
 
