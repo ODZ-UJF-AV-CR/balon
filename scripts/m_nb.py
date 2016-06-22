@@ -81,7 +81,7 @@ class nb_poller(threading.Thread):
               logging.info("{} events with total of {:.0f} recorded in {:.2f} since {:s}.".format(records[0], suma, looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(oldrestime))))
 
               if ((irecords[0] > 950) and (ttsleep > 0.5)) :
-                 ttsleep = math.floor(0.8*ttsleep); 
+                 ttsleep = (0.8*ttsleep); 
                  logging.warn("Risk of NB overflow decreasing NB readout delay to %f.", ttsleep)
               
               nbf.write(str(oldrestime) + "," + str(looptime) + "," + str(record) + "\n")
