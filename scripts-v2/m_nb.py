@@ -11,6 +11,7 @@ import serial
 import math
 
 NaN = float('nan')
+g.data['nb_restime'] = NaN
 
 #### Store a data line into file ####
 def store(record = []):
@@ -25,7 +26,7 @@ def store(record = []):
 
 #### Reset NB ####
 def nb_reset():
-  logging.info('Resetting NB memory')
+  logging.info('Resetting NB memory after %f seconds' % (time.time()-g.data['nb_restime']))
   reset_time = NaN
   try:
     ser = serial.Serial(nb_port, timeout=5)
@@ -67,7 +68,7 @@ def nb_retrieve():
     irecords = map(int,records)
 
     # Compute sum of pulses
-    suma = sum(map(int,records[1:]))
+    suma = sum(irecords[1:])
 
     result = [suma] + irecords
 

@@ -69,6 +69,7 @@ run_start=time.time()
 if nb_enabled:
   arr = ['Epoch','GPS_Alt[m]','Pressure[Pa]'] + nb.get_header()
   nb.store(arr)
+  g.data['nb_restime'] = nb.nb_reset()
 
 ###################################################################
 # GPS thread initialization and startup
@@ -97,10 +98,6 @@ try:
             g.data['Epoch'] = round_start
             lcdargs = []
 
-            # Reset NB if it is enabled
-            if nb_enabled:
-              g.data['nb_restime'] = nb.nb_reset()
-            
             # System UTC epoch time
             csv_header = 'Epoch\t'
             lr="%d\t" % dv('Epoch')
@@ -131,6 +128,8 @@ try:
               # Gets an array, with sum of energies, number of pulses and then energies of events
               csv_header = csv_header + 'NB_Sum\tNB_Count\t'
               nb_records = nb.nb_retrieve()
+              g.data['nb_restime'] = nb.nb_reset()
+            
               lr = lr + '\t'.join(map(str, nb_records[0:1])) + '\t'
 
               nb_sum = nb_records[0]
