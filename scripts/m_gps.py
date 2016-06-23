@@ -41,7 +41,7 @@ def get_header():
 
 def process_next(gpsd):
   if gpsd.waiting():
-    logging.info('Retrieving data from gpsd buffer')
+    logging.debug('Retrieving data from gpsd buffer')
     while gpsd.waiting():
       gpsd.next() 
   

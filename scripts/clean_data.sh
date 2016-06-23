@@ -1,5 +1,5 @@
 #!/bin/bash
-data_dir=/data/balon-v2
+data_dir=/data/balon
 echo -n Remove all logs and img dir in: ${data_dir} [y/n]?\ 
 read r
 if [ x$r == "xy" ]; then

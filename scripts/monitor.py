@@ -117,8 +117,8 @@ try:
                 lr = lr + m_gps.get_record()
               except:
                 raise
-              lcdargs.append('GA%.0f' % (dv('GPS_Alt')))
-              lcdargs.append(' FIX %.0f' % (dv('GPS_Fix')))
+              lcdargs.append('GPS %1.0f Alt %6.0f' % (dv('GPS_Fix'), dv('GPS_Alt')))
+              lcdargs.append('p %5.0f a %6.0f' % (dv('Altimet_Press'), dv('Altimet_Alt')))
 
             # CPU Temperature
             if cputemp_enabled:
@@ -139,14 +139,16 @@ try:
               csv_header = csv_header + 'NB_looptime\tNB_Count\tNB_Sum\t'
               nb_records = nb.nb_retrieve()
               g.data['nb_restime'] = nb.nb_reset()
+              print nb_records
               nb_looptime = nb_records[0]
               nb_sum = nb_records[1]
               nb_count = nb_records[2]
             
               lr = lr + '\t'.join(map(str, [ '%.2f' % ( float(nb_looptime)), nb_count, nb_sum])) + '\t'
 
-              lcdargs.append('NB %.2f' % (float(nb_count/nb_looptime)))
-              lcdargs.append(' S %.2f' % (float(nb_sum/nb_looptime)))
+              lcdargs.append('NB %4.1f S %4.1f' % (float(nb_count/nb_looptime), float(nb_sum/nb_looptime)))
+              if (nb_count > 999):
+                lcdargs.append('>> NB OVERFLOW <<')
 
               nb.store([round_start, dv('GPS_Alt'), dv('Altimet_Press'), dv('SHT_Hum')] + nb_records)
 

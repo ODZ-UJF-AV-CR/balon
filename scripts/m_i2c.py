@@ -42,6 +42,7 @@ bus = [
   "children": [
     {"name": "altimet", "type": "altimet01" , "channel": 4, },   
     {"name": "sht25", "type": "sht25", "channel": 7, },
+    {"name": "sht25b", "type": "sht25", "channel": 1, },
     {"name": "gauge", "type": "lioncell", "channel": 3, },
     {"name": "lcd", "type": "i2clcd", "address": 0x27, "channel": 5, }
   ],
@@ -86,22 +87,21 @@ def lcdargs(lcdargs):
     lcd.init()
 
     row=1
-    logging.info("LCD ARGS: " + ' '.join(lcdargs))
+    logging.debug("LCD ARGS: " + ' '.join(lcdargs))
     for lcdarg in lcdargs:
       if row == 1:
+	time.sleep(0.1)
 	lcd.init()
-	time.sleep(0.2)
+	time.sleep(0.1)
 	lcd.puts(lcdarg)
 	row = 2
       else:
-	time.sleep(0.2)
+	time.sleep(0.1)
 	lcd.set_row2()
-	time.sleep(0.2)
+	time.sleep(0.1)
 	lcd.puts(lcdarg)
-	time.sleep(0.5)
+	time.sleep(1)
         row = 1
-
-    lcd.light(1)
   except IOError as e:
     logging.error('LCD display not available: %s' % e)
 
@@ -114,18 +114,16 @@ def lcd():
     lcd.reset()
     lcd.init()
 
-    lcd.light(0)
-    time.sleep(0.2)
+    time.sleep(0.1)
+    time.sleep(0.1)
 
-    lcd.puts('B%.0f I%.0f' % (dv('Bat_Charge'), -1*dv('Bat_AvgI')))
+    lcd.puts('Bat %3.0f I %5.0f' % (dv('Bat_Charge'), -1*dv('Bat_AvgI')))
     lcd.set_row2()
     time.sleep(0.1)
 
-    #lcd.puts(' BA%.0f' % (dv('Altimet_Alt')))
-    lcd.puts(' H%.1f%%' % (dv('SHT_Hum')))
-    time.sleep(1.0)
-
-    lcd.light(1)
+    lcd.puts('H1 %4.1f H2 %4.1f' % (dv('SHT_Hum'), dv('SHT_Hum2')))
+    #lcd.puts('H1 %4.1f H2 %4.1f' % (99.9, 99.9))
+    time.sleep(1.5)
   except IOError as e:
     logging.error('LCD display not available: %s' % e)
 
@@ -153,6 +151,7 @@ def get_i2c_data():
   # Initialize 
   altimet = cfg.get_device("altimet")
   sht_sensor = cfg.get_device("sht25")
+  sht_sensor_2 = cfg.get_device("sht25b")
   gauge = cfg.get_device("gauge")
 
   time.sleep(0.5)
@@ -203,6 +202,21 @@ def get_i2c_data():
 
   csv_header = csv_header + 'T_SHT\tHumidity\t'
   lr=lr+("%.2f\t%.1f\t" % (dv('SHT_Temp'), dv('SHT_Hum')))
+  
+  # SHT sensor  
+  logging.debug("Retrieving: SHT sensor data")
+  try:
+    sht_sensor_2.route()        
+    temperature = sht_sensor_2.get_temp()
+    humidity = sht_sensor_2.get_hum()
+    logging.info("SHTTemp2: %.2f C Humid2: %.1f " % (temperature, humidity))
+    g.data['SHT_Temp2'] = temperature
+    g.data['SHT_Hum2'] = humidity
+  except IOError as e:
+    logging.error('SHT 2 data unavailable as %s' % e)
+
+  csv_header = csv_header + 'T_SHT2\tHumidity2\t'
+  lr=lr+("%.2f\t%.1f\t" % (dv('SHT_Temp2'), dv('SHT_Hum2')))
 
   # Battery data
   logging.debug("Retrieving: Battery sensor data")

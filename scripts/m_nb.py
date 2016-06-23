@@ -27,7 +27,7 @@ def store(record = []):
 
 #### Reset NB ####
 def nb_reset():
-  logging.info('Resetting NB memory after %f seconds' % (time.time()-g.data['nb_restime']))
+  logging.debug('Resetting NB memory after %f seconds' % (time.time()-g.data['nb_restime']))
   reset_time = NaN
   try:
     ser = serial.Serial(nb_port, timeout=5)
@@ -53,14 +53,14 @@ def get_header():
 #### NB retriever ####
 def nb_retrieve():
   
-  result = [NaN,NaN]
+  result = [NaN,NaN,NaN]
   # Open the serial port
   try:
     looptime = time.time() - g.data['nb_restime']
     #logging.info("NB readout looptime: %.2f" % (looptime))
 
     ser = serial.Serial(nb_port, timeout=5)
-    logging.info("Port opened for NB readout: %s" % (ser.name))
+    logging.debug("Port opened for NB readout: %s" % (ser.name))
 
     # Retrieve data via serial line
     ser.write(b'r')
@@ -74,11 +74,18 @@ def nb_retrieve():
     suma = sum(irecords[1:])
 
     result = [looptime, suma] + irecords
+    if (len(result) < 3):
+      result.append(0)
 
     logging.info("NB: {} events with total of {:.0f} recorded in {:.2f} since {:s}.".format(records[0], suma, looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(g.data['nb_restime']))))
-
-    g.data['nb_count_ps'] = 1.0*float(records[0])/looptime
-    g.data['nb_sum_ps'] = 1.0*float(suma)/looptime
+    
+    if (looptime > 0):
+      g.data['nb_count_ps'] = 1.0*float(records[0])/looptime
+      g.data['nb_sum_ps'] = 1.0*float(suma)/looptime
+    else:
+      g.data['nb_count_ps'] = -1
+      g.data['nb_sum_ps'] = -1
+      
     ser.close()
 
   except IOError as e:
