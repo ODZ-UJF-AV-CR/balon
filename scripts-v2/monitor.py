@@ -22,7 +22,7 @@ from pymlab import config
 import m_settings as g
 #import m_pcrd
 import m_nb as nb
-import m_gps2
+import m_gps
 import m_cpu
 import m_i2c
 
@@ -111,7 +111,7 @@ try:
             # GPS data 
             if gps_enabled:
               try:
-                m_gps.process_next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
+                m_gps.process_next(gpsd) #this will continue to loop and grab EACH set of gpsd info to clear the buffer
                 logging.info(m_gps.get_status_string())
                 csv_header = csv_header + m_gps.get_header()
                 lr = lr + m_gps.get_record()
@@ -148,14 +148,14 @@ try:
               lcdargs.append('NB %.2f' % (float(nb_count/nb_looptime)))
               lcdargs.append(' S %.2f' % (float(nb_sum/nb_looptime)))
 
-              nb.store([round_start, gpsp.get_alt(), dv('Altimet_Press'), dv('SHT_Hum')] + nb_records)
+              nb.store([round_start, dv('GPS_Alt'), dv('Altimet_Press'), dv('SHT_Hum')] + nb_records)
 
             # If LCD available, update it
             if i2c_enabled:
               m_i2c.lcdargs(lcdargs)
 
           except ValueError as e:
-            logging.critical("%s" % e)
+           logging.critical("%s" % e)
 
           except TypeError as e:
             logging.critical("%s" % e)
@@ -185,12 +185,5 @@ except (KeyboardInterrupt, SystemExit):
     #f.write("\r\n")
     f.close()
          
-    if gps_enabled:
-      try:
-        gpsp.running = False
-        logging.info("GPS thread asked to shut down.")
-      except NameError:
-        logging.error("GPS part enabled, but not initialized?")
-
     sys.exit(0)
 

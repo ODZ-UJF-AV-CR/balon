@@ -8,131 +8,68 @@ import sys
 import logging 
 import re
 
+import m_settings as g
 import os
 from gps import *
 import time
-import threading
-
-import random
-
-gpsd = None #seting the global variable
-
-# Dictionaries for last read and last valid data
-data = {}
-lv_data = {}
 
 # Get sensor value or -1 if not available
 def dv(sname):
-  if sname in data:
-    return(data[sname])
-  else:
-    return(-1)
-
-def lv(sname):
-  if sname in lv_data:
-    return(lv_data[sname])
+  if sname in g.data:
+    return(g.data[sname])
   else:
     return(-1)
 
 NaN = float('nan')
-#def isnan(x): return str(x) == 'nan'
 
-#### GPS Poller #####################################################
-class GpsPoller(threading.Thread):
-  global lv_data
-  global data
+# GPS get header
+def get_alt():
+  return(dv('GPS_Alt'))
+ 
+def get_fix():
+  return(dv('GPS_Fix'))
 
-  def __init__(self):
-    logging.info("GPS poller thread initializing.")
-    threading.Thread.__init__(self)
-    global gpsd #bring it in scope
-    gpsd = gps(mode=WATCH_ENABLE) #starting the stream of info
-    self.running = True #setting the thread running to true
+def get_status_string():
+  status_string = "GPSTime: %s Fix: %d Alt: %f (%f) m Track: %f Speed: %f (%f) m/s Lat: %f Lon: %f (%f m)" % (dv('GPS_Time'), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_epv'), dv('GPS_Track'), dv('GPS_Speed'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'), dv('GPS_epx'))
+  return(status_string)
 
-  def run(self):
-    logging.info("GPS poller thread running.")
-    global gpsd
-    avg_cr = None      # Moving average climb rate
-    avg_over = 10.0    # Average over ten records
+def get_record():
+  return(str("%s\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Track'),  dv('GPS_epx'), dv('GPS_epv'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'))))
+
+def get_header():
+  return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_track\tGPS_climb\tGPS_epx\tGPS_epv\tGPS_eps\tLatitude\tLongitude\t')
+
+def process_next(gpsd):
+  if gpsd.waiting():
+    logging.info('Retrieving data from gpsd buffer')
+    while gpsd.waiting():
+      gpsd.next() 
+  
     time_re = re.compile('^(.+)T(.+)Z$')
 
-    data['GPS_AvgClimb'] = NaN
-    data['GPS_Climb']=NaN
-
-    while self.running:
-      #logging.debug("Retrieving GPS data.")
-      gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
-      data['Epoch'] = time.time()
-      data['GPS_DateTime']=gpsd.utc
-      if (len(data['GPS_DateTime']) == 0):
-        data['GPS_DateTime'] = NaN
-        data['GPS_Date'] = NaN
-        data['GPS_Time'] = NaN
+    g.data['Epoch'] = time.time()
+    g.data['GPS_DateTime']=gpsd.utc
+    if (len(g.data['GPS_DateTime']) == 0):
+      g.data['GPS_DateTime'] = NaN
+      g.data['GPS_Date'] = NaN
+      g.data['GPS_Time'] = NaN
+    else:
+      tre = time_re.match(g.data['GPS_DateTime'])
+      if tre:
+        g.data['GPS_Date'] = tre.group(1)
+        g.data['GPS_Time'] = tre.group(2)
       else:
-        tre = time_re.match(data['GPS_DateTime'])
-        if tre:
-          data['GPS_Date'] = tre.group(1)
-          data['GPS_Time'] = tre.group(2)
-        else:
-          logging.warn('Can not parse: ' + str(data['GPS_DateTime']))
+        logging.warn('Can not parse: ' + str(g.data['GPS_DateTime']))
 
-      data['GPS_Fix']=gpsd.fix.mode
-      data['GPS_Alt']=gpsd.fix.altitude
-      data['GPS_Lat']=gpsd.fix.latitude
-      data['GPS_Lon']=gpsd.fix.longitude
-      data['GPS_Speed']=0.514444*gpsd.fix.speed
-      data['GPS_Track']=gpsd.fix.track
-      data['GPS_epx']=gpsd.fix.epx # Position error [m]
-      data['GPS_epv']=gpsd.fix.epv # Altitude error [m]
-      data['GPS_eps']=gpsd.fix.eps # Speed error [m/s]
-
-      if (data['GPS_Fix'] > 2): 
-        if 'Prev_Alt' in data and 'Prev_Epoch' in data:
-          if data['Epoch'] - data['Prev_Epoch'] > 5.0 :
-            d_alt = data['GPS_Alt'] - data['Prev_Alt']
-            d_t = data['Epoch'] - data['Prev_Epoch']
-            data['GPS_Climb']= d_alt/d_t
-            data['Prev_Epoch'] = time.time()
-            data['Prev_Alt'] = data['GPS_Alt']
-        else:
-          data['Prev_Epoch'] = time.time()
-          data['Prev_Alt'] = data['GPS_Alt']
-      else:
-        data['GPS_Climb'] = NaN
-
-      if (data['GPS_Fix'] > 2):
-        if not math.isnan(data['GPS_Climb']):
-          if (avg_cr == None):
-            avg_cr = data['GPS_Climb']
-          avg_cr = (avg_cr*(avg_over - 1.0) + data['GPS_Climb'])/avg_over
-          data['GPS_AvgClimb'] = avg_cr  
-        for k in data.keys():
-          lv_data[k] = data[k]  
-      #logging.info(self.get_status_string())
-      #logging.debug(self.get_lv_status_string())
-
-  def get_alt(self):
-    return(dv('GPS_Alt'))
- 
-  def get_fix(self):
-    return(dv('GPS_Fix'))
-
-  def get_status_string(self):
-    status_string = "GPSTime: %s Fix: %d Alt: %f (%f) m Track: %f Climb: %f AvgClimb: %f Speed: %f (%f) m/s Lat: %f Lon: %f (%f m)" % (dv('GPS_Time'), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_epv'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_AvgClimb'), dv('GPS_Speed'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'), dv('GPS_epx'))
-    return(status_string)
-
-  def get_lv_status_string(self):
-    status_string = "LV GPSTime: %s Fix: %d Alt: %f (%f) m Track: %f Climb: %f Speed: %f (%f) m/s \nLat: %f Lon: %f (%f m)" % (lv('GPS_Time'), lv('GPS_Fix'), lv('GPS_Alt'), lv('GPS_epv'), lv('GPS_Track'), lv('GPS_Climb'), lv('GPS_Speed'), lv('GPS_AvgClimb'), lv('GPS_eps'), lv('GPS_Lat'), lv('GPS_Lon'), lv('GPS_epx'))
-    return(status_string)
-
-  def get_record(self):
-    return(str("%s\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_AvgClimb'), dv('GPS_epx'), dv('GPS_epv'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'))))
-
-  def get_header(self):
-    return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_track\tGPS_climb\tGPS_avgClimb\tGPS_epx\tGPS_epv\tGPS_eps\tLatitude\tLongitude\t')
-
-  def split_gps_time(gpstime, self):
-    logging.info(lv('GPS_Time'))
+    g.data['GPS_Fix']=gpsd.fix.mode
+    g.data['GPS_Alt']=gpsd.fix.altitude
+    g.data['GPS_Lat']=gpsd.fix.latitude
+    g.data['GPS_Lon']=gpsd.fix.longitude
+    g.data['GPS_Speed']=0.514444*gpsd.fix.speed
+    g.data['GPS_Track']=gpsd.fix.track
+    g.data['GPS_epx']=gpsd.fix.epx # Position error [m]
+    g.data['GPS_epv']=gpsd.fix.epv # Altitude error [m]
+    g.data['GPS_eps']=gpsd.fix.eps # Speed error [m/s]
 
 #### main ####
 if __name__ == '__main__':
@@ -141,17 +78,10 @@ if __name__ == '__main__':
     format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
     )
   try:
-    # GPS thread initialization and startup
-    gpsp = GpsPoller() # create the thread
-    gpsp.start() # start it up
-    print "%-24s %3s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s" % ('UTC','Fix','Alt','Speed','Track','Climb','AvgClimb', 'PosErr','AltErr','SpeedErr','Latitude','Longitude')
-    while gpsp.running:
+    gpsd = gps(mode=WATCH_ENABLE)
+    while True:
+      process_next(gpsd)
+      logging.info(get_status_string())
       time.sleep(1)
-      print "%24s %3d %10f %10f %10f %10f %10f %10f %10f %10f %10f %10f" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Track'), dv('GPS_Climb'), dv('GPS_AvgClimb'), dv('GPS_epx'), dv('GPS_epv'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'))
-      #print gpsp.get_record()
   except (KeyboardInterrupt, SystemExit):
     logging.error("Exiting:")
-    if gpsp.running:
-      gpsp.running = False
-      logging.info("GPS thread asked to shut down.")
-    sys.exit(0)
