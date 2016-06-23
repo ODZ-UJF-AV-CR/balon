@@ -14,7 +14,7 @@
 
 [ -f /etc/default/rcS ] && . /etc/default/rcS
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-DAEMON=/home/odroid/git/balon/scripts-v2/monitor.py
+DAEMON=/home/odroid/git/balon/scripts/monitor.py
 PIDDIR=/var/run
 PIDFILE=$PIDDIR/balon.pid
 DESC="balon data capture daemon"
