@@ -22,7 +22,7 @@ from pymlab import config
 import m_settings as g
 #import m_pcrd
 import m_nb as nb
-import m_gps
+import m_gps2
 import m_cpu
 import m_i2c
 
@@ -75,8 +75,14 @@ if nb_enabled:
 # GPS thread initialization and startup
 if gps_enabled:
   logging.info("Initializing GPS interface.")
-  gpsp = m_gps.GpsPoller() # create the thread
-  gpsp.start() # start it up
+  try:
+    g.data['GPS_AvgClimb'] = NaN
+    g.data['GPS_Climb']=NaN
+
+    gpsd = gps(mode=WATCH_ENABLE)
+  except:
+    logging.critical('GPS initialization failed: %s' % (e))
+    gps_enabled = False
 else:
   logging.warning("GPS interface disabled.")
 
@@ -104,12 +110,15 @@ try:
  
             # GPS data 
             if gps_enabled:
-              logging.info(gpsp.get_status_string())
-              csv_header = csv_header + gpsp.get_header()
-              logging.info('GPS status: Alt %.2f Fix: %i' % (gpsp.get_alt(), gpsp.get_fix()))
-              lr = lr + gpsp.get_record()
-              lcdargs.append('GA%.0f' % (gpsp.get_alt()))
-              lcdargs.append(' FIX %.0f' % (gpsp.get_fix()))
+              try:
+                m_gps.process_next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
+                logging.info(m_gps.get_status_string())
+                csv_header = csv_header + m_gps.get_header()
+                lr = lr + m_gps.get_record()
+              except:
+                raise
+              lcdargs.append('GA%.0f' % (dv('GPS_Alt')))
+              lcdargs.append(' FIX %.0f' % (dv('GPS_Fix')))
 
             # CPU Temperature
             if cputemp_enabled:
