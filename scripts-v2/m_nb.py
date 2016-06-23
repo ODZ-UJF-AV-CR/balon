@@ -45,7 +45,7 @@ def nb_reset():
 
 #### CSV header ####
 def get_header():
-  array = ['NB_Sum', 'NB_Count'] 
+  array = ['NB_looptime', 'NB_Sum', 'NB_Count'] 
   for i in range(1,1000):
     array.append('NB_%i' % (i))
   return(array)

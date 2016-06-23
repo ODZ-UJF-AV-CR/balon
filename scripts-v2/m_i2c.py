@@ -76,7 +76,36 @@ def press_to_height(pPa):
   else:
     return(NaN) 
 
-def lcd(lcdargs):
+def lcdargs(lcdargs):
+  try:
+    cfg.initialize()
+    lcd = cfg.get_device("lcd")
+
+    lcd.route()
+    lcd.reset()
+    lcd.init()
+
+    row=1
+    logging.info("LCD ARGS: " + ' '.join(lcdargs))
+    for lcdarg in lcdargs:
+      if row == 1:
+	lcd.init()
+	time.sleep(0.2)
+	lcd.puts(lcdarg)
+	row = 2
+      else:
+	time.sleep(0.2)
+	lcd.set_row2()
+	time.sleep(0.2)
+	lcd.puts(lcdarg)
+	time.sleep(0.5)
+        row = 1
+
+    lcd.light(1)
+  except IOError as e:
+    logging.error('LCD display not available: %s' % e)
+
+def lcd():
   try:
     cfg.initialize()
     lcd = cfg.get_device("lcd")
@@ -94,23 +123,7 @@ def lcd(lcdargs):
 
     #lcd.puts(' BA%.0f' % (dv('Altimet_Alt')))
     lcd.puts(' H%.1f%%' % (dv('SHT_Hum')))
-    time.sleep(1.5)
-
-    row=1
-    logging.info("LCD ARGS: " + ' '.join(lcdargs))
-    for lcdarg in lcdargs:
-      if row == 1:
-	lcd.init()
-	time.sleep(0.2)
-	lcd.puts(lcdarg)
-	row = 2
-      else:
-	time.sleep(0.2)
-	lcd.set_row2()
-	time.sleep(0.2)
-	lcd.puts(lcdarg)
-	time.sleep(1.5)
-        row = 1
+    time.sleep(1.0)
 
     lcd.light(1)
   except IOError as e:

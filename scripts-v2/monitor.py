@@ -122,6 +122,7 @@ try:
               i2c=m_i2c.get_i2c_data()
               csv_header += i2c['header']
               lr += i2c['record'] 
+              m_i2c.lcd()
 
             # NB sensors
             if nb_enabled:
@@ -142,7 +143,7 @@ try:
 
             # If LCD available, update it
             if i2c_enabled:
-              m_i2c.lcd(lcdargs)
+              m_i2c.lcdargs(lcdargs)
 
           except ValueError as e:
             logging.critical("%s" % e)
