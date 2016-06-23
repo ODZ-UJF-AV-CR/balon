@@ -12,6 +12,7 @@ import math
 
 NaN = float('nan')
 g.data['nb_restime'] = NaN
+nb_port = '/dev/ttyUSB0'
 
 #### Store a data line into file ####
 def store(record = []):
@@ -32,10 +33,12 @@ def nb_reset():
     ser = serial.Serial(nb_port, timeout=5)
     reset_time = time.time()
     ser.write(b'x')
+    #logging.info('Reset done.')
 
   except IOError as e:
     logging.critical("%s" % e)
     reset_time = NaN 
+    logging.critical('Reset FAILED, %s' % (e))
 
   finally:
     return(reset_time) 
@@ -49,12 +52,12 @@ def get_header():
 
 #### NB retriever ####
 def nb_retrieve():
-  nb_port = '/dev/USB0'
+  
   result = [NaN,NaN]
   # Open the serial port
   try:
     looptime = time.time() - g.data['nb_restime']
-    logging.info("NB readout looptime: %.2f" % (looptime))
+    #logging.info("NB readout looptime: %.2f" % (looptime))
 
     ser = serial.Serial(nb_port, timeout=5)
     logging.info("Port opened for NB readout: %s" % (ser.name))
@@ -70,7 +73,7 @@ def nb_retrieve():
     # Compute sum of pulses
     suma = sum(irecords[1:])
 
-    result = [suma] + irecords
+    result = [looptime, suma] + irecords
 
     logging.info("NB: {} events with total of {:.0f} recorded in {:.2f} since {:s}.".format(records[0], suma, looptime, time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(g.data['nb_restime']))))
 
@@ -96,7 +99,7 @@ if __name__ == '__main__':
     # Reset NB timer
     g.data['nb_restime'] = nb_reset()
     logging.info('NB reset at: %s' % (g.data['nb_restime']))
-    logging.info('NB readout: ' + ' '.join(nb_retrieve()))
+    logging.info('NB readout: ' + ' '.join(map(str,nb_retrieve())))
   except (KeyboardInterrupt,SystemExit):
     logging.info("NB thread asked to exit")
   
