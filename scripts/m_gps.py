@@ -37,7 +37,7 @@ def get_record():
   return(str("%s\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t" % (str(dv('GPS_Time')), dv('GPS_Fix'), dv('GPS_Alt'), dv('GPS_Speed'), dv('GPS_Track'),  dv('GPS_epx'), dv('GPS_epv'), dv('GPS_eps'), dv('GPS_Lat'), dv('GPS_Lon'))))
 
 def get_header():
-  return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_track\tGPS_climb\tGPS_epx\tGPS_epv\tGPS_eps\tLatitude\tLongitude\t')
+  return('GPS_date_UTC\tGPS_fix\tGPS_alt\tGPS_speed\tGPS_track\tGPS_epx\tGPS_epv\tGPS_eps\tLatitude\tLongitude\t')
 
 def process_next(gpsd):
   if gpsd.waiting():
