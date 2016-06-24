@@ -123,7 +123,7 @@ def lcd():
 
     lcd.puts('H1 %4.1f H2 %4.1f' % (dv('SHT_Hum'), dv('SHT_Hum2')))
     #lcd.puts('H1 %4.1f H2 %4.1f' % (99.9, 99.9))
-    time.sleep(1.5)
+    time.sleep(0.9)
   except IOError as e:
     logging.error('LCD display not available: %s' % e)
 
