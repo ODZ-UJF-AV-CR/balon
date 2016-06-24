@@ -67,7 +67,7 @@ run_start=time.time()
 ###################################################################
 # NB
 if nb_enabled:
-  arr = ['Epoch','GPS_Alt[m]','Pressure[Pa]','Humidity'] + nb.get_header()
+  arr = ['Epoch','GPS_Alt[m]','Pressure[Pa]','Humidity1','Temp1','Humidity2','Temp2'] + nb.get_header()
   nb.store(arr)
   g.data['nb_restime'] = nb.nb_reset()
 
@@ -139,7 +139,7 @@ try:
               csv_header = csv_header + 'NB_looptime\tNB_Count\tNB_Sum\t'
               nb_records = nb.nb_retrieve()
               g.data['nb_restime'] = nb.nb_reset()
-              print nb_records
+
               nb_looptime = nb_records[0]
               nb_sum = nb_records[1]
               nb_count = nb_records[2]
@@ -150,7 +150,7 @@ try:
               if (nb_count > 999):
                 lcdargs.append('>> NB OVERFLOW <<')
 
-              nb.store([round_start, dv('GPS_Alt'), dv('Altimet_Press'), dv('SHT_Hum')] + nb_records)
+              nb.store([round_start, dv('GPS_Alt'), dv('Altimet_Press'), dv('SHT_Hum'), dv('SHT_Temp'), dv('SHT_Hum2'), dv('SHT_Temp2')] + nb_records)
 
             # If LCD available, update it
             if i2c_enabled:
