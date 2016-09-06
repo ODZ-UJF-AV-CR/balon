@@ -269,23 +269,23 @@ $EndComp
 $Comp
 L CONN_6 K1
 U 1 1 57287BC9
-P 1200 2300
-F 0 "K1" H 1250 2650 60  0000 C CNN
-F 1 "CONN_6" H 1200 1950 60  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x06" H 1200 2300 60  0001 C CNN
-F 3 "" H 1200 2300 60  0000 C CNN
-	1    1200 2300
+P 1200 2200
+F 0 "K1" H 1250 2550 60  0000 C CNN
+F 1 "CONN_6" H 1200 1850 60  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x06" H 1200 2200 60  0001 C CNN
+F 3 "" H 1200 2200 60  0000 C CNN
+	1    1200 2200
 	-1   0    0    -1  
 $EndComp
 $Comp
 L GND-RESCUE-modballoon #PWR06
 U 1 1 5728802D
-P 1650 2650
-F 0 "#PWR06" H 1650 2650 30  0001 C CNN
-F 1 "GND" H 1650 2580 30  0001 C CNN
-F 2 "" H 1650 2650 60  0000 C CNN
-F 3 "" H 1650 2650 60  0000 C CNN
-	1    1650 2650
+P 1650 2550
+F 0 "#PWR06" H 1650 2550 30  0001 C CNN
+F 1 "GND" H 1650 2480 30  0001 C CNN
+F 2 "" H 1650 2550 60  0000 C CNN
+F 3 "" H 1650 2550 60  0000 C CNN
+	1    1650 2550
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -393,7 +393,7 @@ Text Notes 9450 2950 0    60   ~ 0
 Vystup 1090 MHz do SDR\n
 Text Notes 9450 2100 0    60   ~ 0
 Rx/Tx/1090MHz antena\n
-Text Notes 1050 1850 0    60   ~ 0
+Text Notes 1050 1750 0    60   ~ 0
 Napajeni\n
 Text Notes 1050 2800 0    60   ~ 0
 Rozsirujici konektor\n
@@ -677,8 +677,8 @@ Wire Wire Line
 	7350 5550 7350 3250
 Connection ~ 7350 3250
 Wire Wire Line
-	2550 2150 2550 2700
-Connection ~ 2550 2150
+	2750 2150 2750 2700
+Connection ~ 2750 2150
 Wire Wire Line
 	9800 4000 9650 4000
 Wire Wire Line
@@ -704,26 +704,16 @@ Wire Wire Line
 Wire Wire Line
 	7000 5550 7950 5550
 Wire Wire Line
-	2550 2700 4750 2700
+	2750 2700 4750 2700
 Wire Wire Line
-	1550 2050 1650 2050
-Wire Wire Line
-	1650 2050 1650 2250
-Wire Wire Line
-	1650 2250 1550 2250
-Wire Wire Line
-	1550 2150 1800 2150
-Connection ~ 1650 2150
-Wire Wire Line
-	1550 2350 1650 2350
-Wire Wire Line
-	1650 2350 1650 2650
-Wire Wire Line
-	1550 2550 1650 2550
-Connection ~ 1650 2550
+	1550 1950 1650 1950
+Connection ~ 1650 2050
 Wire Wire Line
 	1550 2450 1650 2450
 Connection ~ 1650 2450
+Wire Wire Line
+	1550 2350 1650 2350
+Connection ~ 1650 2350
 Wire Wire Line
 	1650 3100 1650 4000
 Wire Wire Line
@@ -848,4 +838,42 @@ Connection ~ 3800 7300
 Connection ~ 3700 7300
 Wire Wire Line
 	1800 7400 1800 7300
+$Comp
+L D_Schottky D3
+U 1 1 57CEBDCD
+P 2350 2400
+F 0 "D3" V 2250 2500 50  0000 C CNN
+F 1 "B260A" V 2450 2550 50  0000 C CNN
+F 2 "Diodes_SMD:SMA_Handsoldering" H 2350 2400 50  0001 C CNN
+F 3 "" H 2350 2400 50  0000 C CNN
+	1    2350 2400
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR020
+U 1 1 57CEBFFC
+P 2350 2600
+F 0 "#PWR020" H 2350 2350 50  0001 C CNN
+F 1 "GND" H 2350 2450 50  0000 C CNN
+F 2 "" H 2350 2600 50  0000 C CNN
+F 3 "" H 2350 2600 50  0000 C CNN
+	1    2350 2600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2350 2250 2350 2150
+Connection ~ 2350 2150
+Wire Wire Line
+	2350 2550 2350 2600
+Wire Wire Line
+	1650 1950 1650 2550
+Wire Wire Line
+	1550 2050 1650 2050
+Wire Wire Line
+	1550 2250 1600 2250
+Wire Wire Line
+	1600 2250 1600 2150
+Wire Wire Line
+	1550 2150 1800 2150
+Connection ~ 1600 2150
 $EndSCHEMATC

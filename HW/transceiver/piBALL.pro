@@ -1,5 +1,5 @@
-update=Út 3. květen 2016, 10:23:28 CEST
-last_client=eeschema
+update=Tue 06 Sep 2016 12:57:03 CEST
+last_client=kicad
 [eeschema]
 version=1
 LibDir=Balloln_pretty
@@ -43,3 +43,5 @@ LibName31=mic4680-3
 LibName32=sam4sd16
 LibName33=sam_jtag
 LibName34=tps22945dckr
+[general]
+version=1
