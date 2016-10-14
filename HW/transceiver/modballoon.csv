@@ -1,4 +1,4 @@
-"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
+"ID";"Určovatel";"Pouzdro";"Množství";"Určení";"Tisk rohového razítka";
 1;"C1,C2,C3,C12,C13,C15,C16,C18,C21,C22,C24,C32,C34,C36,C39,C68";"C_0603";16;"M1";;;
 2;"C4,C5,C6,C7";"TantalC_SizeD_EIA-7343_Reflow";4;"10M/25V/D";;;
 3;"C8,C9,C10,C11";"TantalC_SizeD_EIA-7343_Reflow";4;"100M/6V3/D";;;
@@ -16,7 +16,7 @@
 15;"C58,C72,C74";"C_0603";3;"15";;;
 16;"C67";"C_0603";1;"6p8";;;
 17;"C71,C73";"C_0603";2;"2p2";;;
-18;"D1,D2";"SMA_Handsoldering";2;"B260A";;;
+18;"D1,D2,D3";"SMA_Handsoldering";3;"B260A";;;
 19;"DD1,DD7";"SC-70-5";2;"TPS22945DCKR";;;
 20;"DD2,DD3";"SOIC-8-N";2;"MIC4680-3.3BM";;;
 21;"DD4";"LQFP-64_10x10mm_Pitch0.5mm";1;"SAM4SD16";;;
