@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name Balloln_pretty)(type KiCad)(uri "$(KIPRJMOD)/Balloln_pretty")(options "")(descr ""))
+)

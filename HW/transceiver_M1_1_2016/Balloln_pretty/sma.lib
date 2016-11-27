@@ -1,0 +1,23 @@
+EESchema-LIBRARY Version 2.3  Date: Út 3. květen 2016, 13:42:16 CEST
+#encoding utf-8
+#
+# SMA
+#
+DEF SMA K 0 40 Y Y 1 F N
+F0 "K" 0 550 60 H V C CNN
+F1 "SMA" 0 -200 60 H V C CNN
+F2 "~" 0 0 60 H V C CNN
+F3 "~" 0 0 60 H V C CNN
+DRAW
+C 0 350 50 0 1 0 N
+C 0 350 150 0 1 0 N
+P 2 0 1 0  150 200  -150 200 N
+X ~ 1 -150 -100 300 U 50 50 1 1 I
+X ~ 2 -50 -100 300 U 50 50 1 1 I
+X ~ 3 50 -100 300 U 50 50 1 1 I
+X ~ 4 150 -100 300 U 50 50 1 1 I
+X ~ 5 350 350 300 L 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+#End Library
