@@ -40,7 +40,7 @@ sms_queue = []
 
 # GSM module #
 default_destination = g.default_destination
-PORT = '/dev/ttyACM99'
+PORT = '/dev/ttyUSB0'
 BAUDRATE = 9600 # Higher baud rates than 9600 lead to errors
 PIN = None # SIM card PIN (if any)
 
