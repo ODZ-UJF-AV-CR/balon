@@ -6,5 +6,6 @@ if [ $( id -u ) == 0 ]
 then
   su -c $0 balon
 else
-  cvlc v4l2:///dev/video0:chroma=h264:width=1920:height=1080 --sout '#standard{access=http,mux=ts,dst=10.1.1.127:8100,name=stream,mime=video/ts}' -vvv
+  v4l2-ctl --set-fmt-video=width=1920,height=1080,pixelformat=1
+  cvlc v4l2:///dev/video0:chroma=h264:width=1920:height=1080:fps=30 --sout 'file/ps:/data/balon/video/video-test.avi' -vvv
 fi
