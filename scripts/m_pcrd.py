@@ -7,7 +7,7 @@ import time
 import datetime
 import threading
 import logging
-import spidev
+#import spidev
 import math
 
 def channels_summary(channels):
