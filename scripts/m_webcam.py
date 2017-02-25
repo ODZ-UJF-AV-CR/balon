@@ -24,8 +24,8 @@ imagedir=data_dir+"img/"
 # Webcam #
 #video_devices=["/dev/video0","/dev/video1"]
 video_devices=["/dev/video0"]
-resolutionx=1280 # Max 1600
-resolutiony=720 # Max 480
+resolutionx=2304 # small one likes 1280 # Max 1600
+resolutiony=1536 # small one likes 720 # Max 480
 skipframes=50
 beattime=10
 
