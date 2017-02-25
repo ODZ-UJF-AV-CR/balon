@@ -30,7 +30,7 @@ import m_reboot
 
 ###################################################################
 # Parts
-pcrd_enabled    = True
+pcrd_enabled    = False
 webcam_enabled  = True
 gsm_enabled     = True
 gps_enabled     = True
