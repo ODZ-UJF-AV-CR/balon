@@ -1,10 +1,10 @@
 
-// OpenSCAD script for a 2.4GHz "quadrifilar helix antenna".
+// OpenSCAD script for a 868 MHz ISM band "quadrifilar helix antenna".
 // -------------------------------------------------------------
 // Dimensions calculated with John Coppens webpage java script
 // @ http://jcoppens.com/ant/qfh/calc.en.php
 // Input params:
-// Center frequency = 2450 MHz
+// Center frequency = 869.5 MHz
 // Numbers of turns = 0.5
 // Length of one turn = 1
 // Bending radius = 1
@@ -12,19 +12,20 @@
 // -------------------------------------------------------------
 
 
-$fn=40;
-SLICES=20;
+$fn=80;
+
 PI = 3.14159265358979;
 
-D1 = 17.9; // mm large helix1 diameter.
-D2 = 17.1; // mm small helix2 diameter.
-HH1 = 40.8; // mm height of helix1.
-HH2 = 38.8; // mm height of helix2.
+D1 = 50.2; // mm large helix1 diameter.
+D2 = 47.7; // mm small helix2 diameter.
+HH1 = 114.2; // mm height of helix1.
+HH2 = 108.6; // mm height of helix2.
 
 WIRE = 3; // mm diameter.
 
-CYLH = 45; // mm height of support cylinder.
+CYLH = 120; // mm height of support cylinder.
 CYLH2 = CYLH/2; // the half-height of the support cylinder.
+SLICES = 60;
 
 HWIRE11 = CYLH2-HH1/2; // place the four hole-pairs at these heights.
 HWIRE12 = CYLH2-HH2/2;
@@ -110,7 +111,7 @@ module composite()
 			}
 
 			// half-height marker on cylinder
-			rotate([0,0,90]) torus(Rmajor=(D1-WIRE/2), Rminor=0.2, h1=CYLH2);
+			//rotate([0,0,90]) torus(Rmajor=(D1-WIRE/2), Rminor=0.2, h1=CYLH2);
 		}
 		union()
 		{
