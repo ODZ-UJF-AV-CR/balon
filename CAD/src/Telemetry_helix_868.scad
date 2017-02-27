@@ -1,5 +1,6 @@
 
 // OpenSCAD script for a 868 MHz ISM band "quadrifilar helix antenna".
+// The design originated in: http://www.thingiverse.com/thing:634205
 // -------------------------------------------------------------
 // Dimensions calculated with John Coppens webpage java script
 // @ http://jcoppens.com/ant/qfh/calc.en.php
@@ -9,6 +10,7 @@
 // Length of one turn = 1
 // Bending radius = 1
 // Width/height ratio = 0.44
+// 
 // -------------------------------------------------------------
 
 
@@ -74,7 +76,7 @@ module wirechannel()
 // used for projecting outline onto xy-plane.
 module ellipse_base()
 {
-	scale([1,D2/D1,1]) difference() { cylinder(h=1, r1=(D1-WIRE/2)); translate([0,0,-0.2]) cylinder(h=2, r1=(D1-WIRE/2.1)); }
+	scale([1,D2/D1,1]) difference() { cylinder(h=1, r1=(D1/2-WIRE/2)); translate([0,0,-0.2]) cylinder(h=2, r1=(D1/2-WIRE/2)); }
 }
 
 // just a elliptic torus.
@@ -95,14 +97,14 @@ module composite()
 			// helix1's.
 			linear_extrude(height=HWIRE21, twist=-XSI1/2-180, slices=SLICES)
 			{
-				rotate([0,0,0-XSI1/2]) translate([D1,0,0]) projection() scale([1,1/sin(THETA1),1]) wirechannel();
-				rotate([0,0,180-XSI1/2]) translate([D1,0,0]) projection() scale([1,1/sin(THETA1),1]) wirechannel();
+				rotate([0,0,0-XSI1/2]) translate([D1/2,0,0]) projection() scale([1,1/sin(THETA1),1]) wirechannel();
+				rotate([0,0,180-XSI1/2]) translate([D1/2,0,0]) projection() scale([1,1/sin(THETA1),1]) wirechannel();
 			}
 			// helix2's.
 			linear_extrude(height=HWIRE22, twist=-XSI2/2-180, slices=SLICES)
 			{
-				rotate([0,0,90-XSI2/2]) translate([D2,0,0]) projection() scale([1,1/sin(THETA2),1]) wirechannel();
-				rotate([0,0,270-XSI2/2]) translate([D2,0,0]) projection() scale([1,1/sin(THETA2),1]) wirechannel();
+				rotate([0,0,90-XSI2/2]) translate([D2/2,0,0]) projection() scale([1,1/sin(THETA2),1]) wirechannel();
+				rotate([0,0,270-XSI2/2]) translate([D2/2,0,0]) projection() scale([1,1/sin(THETA2),1]) wirechannel();
 			}
 			// elliptic support cylinder.
 			linear_extrude(height=CYLH, twist=-XSI1/2-180, slices=SLICES)
@@ -111,7 +113,7 @@ module composite()
 			}
 
 			// half-height marker on cylinder
-			//rotate([0,0,90]) torus(Rmajor=(D1-WIRE/2), Rminor=0.2, h1=CYLH2);
+			//rotate([0,0,90]) torus(Rmajor=(D1/2-WIRE/2), Rminor=0.2, h1=CYLH2);
 		}
 		union()
 		{
