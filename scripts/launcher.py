@@ -1,4 +1,4 @@
-#/usr/bin/python -p
+#!/usr/bin/python
 
 import subprocess
 import logging
@@ -27,17 +27,17 @@ children = [
 		'name': "sleep_10",
 		'cli': "sleep 10",
 		'on_exit': start_process,
-		'stdout': open('/dev/stdout')
+		'stdout': open('/dev/zero')
 	},
 	{
 		'name': "sleep_3",
 		'cli': "sleep 3",
-		'stdout': open('/dev/stdout')
+		'stdout': open('/dev/zero')
 	},
 	{
 		'name': "sleep_13",
 		'cli': "sleep 13",
-		'stdout': open('/dev/stdout')
+		'stdout': open('/dev/zero')
 	}
 ]
 
