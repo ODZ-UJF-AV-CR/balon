@@ -34,6 +34,8 @@ HWIRE12 = CYLH2-HH2/2;
 HWIRE21 = CYLH2+HH1/2;
 HWIRE22 = CYLH2+HH2/2;
 
+EXTRUSION_WIDTH=0.6;
+
 // some internal calculations. quite hairy math.
 THETA1 = atan2(HH1,D1*PI); // Thetas are used for projecting the wirechannel cross-section onto the xy-plane.
 THETA2 = atan2(HH2,D2*PI);
@@ -66,9 +68,13 @@ module wirechannel()
 {
 	difference()
 	{
-		cylinder(h=2, r=WIRE/2*1.8, center=true);
-		translate([0,0,-0.1]) cylinder(h=3, r=WIRE/2, center=true);
-		translate([1.5*WIRE,0,0]) cube([3*WIRE,WIRE,4], center=true);
+		cylinder(h=2, r=WIRE*0.65, center=true);
+
+		translate([0,0,-0.1]) 
+            cylinder(h=3, r=WIRE/2, center=true);
+
+		translate([1.5*WIRE,0,0]) 
+            cube([3*WIRE,WIRE,4], center=true);
 	}
 }
 
@@ -76,7 +82,11 @@ module wirechannel()
 // used for projecting outline onto xy-plane.
 module ellipse_base()
 {
-	scale([1,D2/D1,1]) difference() { cylinder(h=1, r1=(D1/2-WIRE/2)); translate([0,0,-0.2]) cylinder(h=2, r1=(D1/2-WIRE/2)); }
+	scale([1,D2/D1,1]) 
+        difference(){ 
+            cylinder(h=1, r=(D1/2-WIRE/2), center = true); 
+            cylinder(h=2, r=(D1/2 - WIRE/2 - EXTRUSION_WIDTH), center = true); 
+        }
 }
 
 // just a elliptic torus.
@@ -148,6 +158,7 @@ module drillholes()
 //helix2(rot2=90);
 //helix2(rot2=270);
 //drillholes();
+//ellipse_base();
 
 // MAIN()
 composite();
