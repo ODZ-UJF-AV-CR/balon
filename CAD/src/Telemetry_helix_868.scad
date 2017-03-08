@@ -36,6 +36,15 @@ HWIRE22 = CYLH2+HH2/2;
 
 EXTRUSION_WIDTH=0.6;
 
+pedestal_height = 2;   // designed for use the MLAB standard 12mm screws.
+mount_hole = 3.5;
+clear = 0.175;
+
+MLAB_grid_xoffset = 4.2;
+MLAB_grid_yoffset = 4.2;
+MLAB_grid = 10.16;
+
+
 // some internal calculations. quite hairy math.
 THETA1 = atan2(HH1,D1*PI); // Thetas are used for projecting the wirechannel cross-section onto the xy-plane.
 THETA2 = atan2(HH2,D2*PI);
@@ -45,6 +54,23 @@ XSI1 = ((CYLH/HH1*180)-180); // extra rotation beyond the height of helix1. half
 XSI2 = ((CYLH/HH2*180)-180); // extra rotation beyond the height of helix2.
 echo("xsi1=",XSI1," - xsi2=",XSI2);
 
+
+module base()
+{
+	difference () {
+	    minkowski()
+	    {
+		cube([100,100,pedestal_height]);          // base plastics brick
+	        cylinder(r=5,h=0.1,$fn=20);
+	    }
+	    // MLAB grid holes
+	    grid_list = [for (j = [MLAB_grid_xoffset : MLAB_grid: 150], i = [MLAB_grid_yoffset :MLAB_grid: 150]) [j, i] ];
+	    for (j = grid_list) {
+	            translate (concat(j, [0]))
+	            cylinder (h = 2*pedestal_height, r= mount_hole/2, $fn=20);
+	    }
+	}
+}
 
 // test helix1.
 module helix1(rot1=0)
@@ -139,6 +165,8 @@ module composite()
 			translate([0,0,HWIRE22+CYLH2]) cube([WIRE,CYLH,CYLH], center=true);
 		}
 	}
+	translate([-50,-50,0])
+		base();
 }
 
 module drillholes()
@@ -159,6 +187,7 @@ module drillholes()
 //helix2(rot2=270);
 //drillholes();
 //ellipse_base();
+//base();
 
 // MAIN()
 composite();
