@@ -6,6 +6,20 @@ from base64 import b64encode
 from hashlib import sha256
 from datetime import datetime
 
+def Fletcher16(string):
+    a = map(ord,string)
+    b = [sum(a[:i])%255 for i in range(len(a)+1)]
+    return (sum(b) << 8) | max(b)
+def Fletcher32(string):
+    a = map(ord,string)
+    b = [sum(a[:i])%65535 for i in range(len(a)+1)]
+    return (sum(b) << 16) | max(b)
+def Fletcher64(string):
+    a = map(ord,string)
+    b = [sum(a[:i])%4294967295 for i in range(len(a)+1)]
+    return (sum(b) << 32) | max(b)
+
+
 if len(sys.argv) < 2:
     print "Usage: python %s <sentence> [recv callsign]" % sys.argv[0]
     sys.exit()
