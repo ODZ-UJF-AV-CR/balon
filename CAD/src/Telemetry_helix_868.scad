@@ -36,7 +36,7 @@ HWIRE22 = CYLH2+HH2/2;
 
 EXTRUSION_WIDTH=0.6;
 
-pedestal_height = 2;   // designed for use the MLAB standard 12mm screws.
+pedestal_height = 1.7;   // designed for use the MLAB standard 12mm screws.
 mount_hole = 3.5;
 clear = 0.175;
 
@@ -56,85 +56,35 @@ echo("xsi1=",XSI1," - xsi2=",XSI2);
 
 
 
-h = 10;      // Výška horní části ZDE SE H = S
-s = 0;      // Výška spodní části
-a = 5;       // Šířka krabičky (počet obsazených dírek)
-b = 8;      // Délka krabičky (počet obsazených dírek)
-d = 3;     // Průměr trnů a šířka hlavních příček (>1)
-MLAB_grid = 10.16;
-pedestal_height = 2; 
+//------------ Safety grid parameters---------------------------
 
-$fn=20;
-
-roh =0.5; // Zaoblení hran
-
-// Kvádr a válec se zaoblenými hranami
-module roundcube(size,center=true,corner) {
-  minkowski() {
-    cube(size,center);
-    sphere(corner);
-  }
-}
-
-module roundcylinder(size, r, center=true, corner) {
-  minkowski() {
-    cylinder(size, r, r, center);
-    sphere(corner);
-  }
-}
+nY = 8;
+nX = 6;
 
 
+meshX=100;
+meshY=100;
+
+// width of solid part of grid
+meshSolid=1.2;
+
+meshSpaceX = (meshX - meshSolid*nX)/nX;
+meshSpaceY = (meshY - meshSolid*nY)/nY;
 
 
 
 
 module base(){
-  union() {
-      // Hlavní příčky
-     translate([0,(MLAB_grid*(a+1))/2,0]) 
-      roundcube([d-2*roh,MLAB_grid*(a+1),d-2*roh],center = true, corner= roh);
-     
-     translate([(MLAB_grid*(b+1))/2,0,0])       
-      roundcube([MLAB_grid*(b+1),d-2*roh,d-2*roh],corner= roh); 
-      
-     translate([0, 0, h/2])
-      cylinder(h, d/2, d/2, center = true);
-      
-      //Vedlejší příčky - ve směru x
-      for(i = [1:a]) {
-     translate([(MLAB_grid*(b+1))/2,MLAB_grid*i,-d/4+roh/2])
-      roundcube([MLAB_grid*(b+1),d-2*roh,(d-2*roh)/2],corner = roh);
-      }
-      //Vedlejší příčky - ve směru y
-      for(i = [1:b]) {
-     translate([MLAB_grid*i, (MLAB_grid*(a+1))/2, -d/4+roh/2])
-      roundcube([d-2*roh, MLAB_grid*(a+1), (d-2*roh)/2],corner=roh);
-      }      
-      
- // ZAOBLENI ROHU    
-    hull() {
-        difference() {
-            union() {
-                translate([0,(MLAB_grid*(a+1))/2,0]) 
-                    roundcube([d-2*roh,MLAB_grid*(a+1),d-2*roh],center = true, corner= roh);
-                 
-                translate([(MLAB_grid*(b+1))/2,0,0])       
-                    roundcube([MLAB_grid*(b+1),d-2*roh,d-2*roh],corner= roh); 
-                  
-                translate([0, 0, h/2-d/2+2*roh])
-                    roundcylinder(h, (d/2-roh), corner = roh);
-            }
-            translate([0,(MLAB_grid*(a+1))/2 + d,0]) 
-                cube([20*d,MLAB_grid*(a+1)+d,20*d], center = true);
-             
-            translate([(MLAB_grid*(b+1))/2 + d,0,0]) 
-                cube([MLAB_grid*(b+1)+d,20*d,20*d], center = true);
-                    
-            }
-    }
-    
-    
-    
+    union()
+    {
+        for (i=[1:nX-1]) {
+                 translate([i*(meshSolid+meshSpaceX) - meshSolid/2,0,0]) cube(size=[meshSolid, meshY, pedestal_height],center=false);
+        }
+
+        for (i=[1:nY-1]) {
+                translate([0,i*(meshSolid+meshSpaceY) - meshSolid/2,0]) cube(size=[meshX, meshSolid, pedestal_height],center=false);
+
+        }
     }
 }
 
