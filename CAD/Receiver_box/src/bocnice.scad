@@ -68,13 +68,13 @@ difference () {
 
 //----------------------------------------------------
 //LOGO MLAB 
-/*  
+  
 translate([(5-(pocet_der2)*vzdalenost_der)/2,0,0])
-            translate ([0, -vzdalenost_od_okraje-tloustka_bocnice*1/2,0])  // 
+            translate ([0, -vzdalenost_od_okraje-tloustka_bocnice + 0.8,0])  // 
                 rotate([0, 90, 270])
                     scale(v = [logo_sirka, logo_vyska, 0.3])
                         MLAB_logo_short();
-*/
+
 
 
 
