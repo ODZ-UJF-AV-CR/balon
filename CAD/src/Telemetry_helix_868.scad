@@ -55,22 +55,89 @@ XSI2 = ((CYLH/HH2*180)-180); // extra rotation beyond the height of helix2.
 echo("xsi1=",XSI1," - xsi2=",XSI2);
 
 
-module base()
-{
-	difference () {
-	    minkowski()
-	    {
-		cube([100,100,pedestal_height]);          // base plastics brick
-	        cylinder(r=5,h=0.1,$fn=20);
-	    }
-	    // MLAB grid holes
-	    grid_list = [for (j = [MLAB_grid_xoffset : MLAB_grid: 150], i = [MLAB_grid_yoffset :MLAB_grid: 150]) [j, i] ];
-	    for (j = grid_list) {
-	            translate (concat(j, [0]))
-	            cylinder (h = 2*pedestal_height, r= mount_hole/2, $fn=20);
-	    }
-	}
+
+h = 10;      // Výška horní části ZDE SE H = S
+s = 0;      // Výška spodní části
+a = 5;       // Šířka krabičky (počet obsazených dírek)
+b = 8;      // Délka krabičky (počet obsazených dírek)
+d = 3;     // Průměr trnů a šířka hlavních příček (>1)
+MLAB_grid = 10.16;
+pedestal_height = 2; 
+
+$fn=20;
+
+roh =0.5; // Zaoblení hran
+
+// Kvádr a válec se zaoblenými hranami
+module roundcube(size,center=true,corner) {
+  minkowski() {
+    cube(size,center);
+    sphere(corner);
+  }
 }
+
+module roundcylinder(size, r, center=true, corner) {
+  minkowski() {
+    cylinder(size, r, r, center);
+    sphere(corner);
+  }
+}
+
+
+
+
+
+
+module base(){
+  union() {
+      // Hlavní příčky
+     translate([0,(MLAB_grid*(a+1))/2,0]) 
+      roundcube([d-2*roh,MLAB_grid*(a+1),d-2*roh],center = true, corner= roh);
+     
+     translate([(MLAB_grid*(b+1))/2,0,0])       
+      roundcube([MLAB_grid*(b+1),d-2*roh,d-2*roh],corner= roh); 
+      
+     translate([0, 0, h/2])
+      cylinder(h, d/2, d/2, center = true);
+      
+      //Vedlejší příčky - ve směru x
+      for(i = [1:a]) {
+     translate([(MLAB_grid*(b+1))/2,MLAB_grid*i,-d/4+roh/2])
+      roundcube([MLAB_grid*(b+1),d-2*roh,(d-2*roh)/2],corner = roh);
+      }
+      //Vedlejší příčky - ve směru y
+      for(i = [1:b]) {
+     translate([MLAB_grid*i, (MLAB_grid*(a+1))/2, -d/4+roh/2])
+      roundcube([d-2*roh, MLAB_grid*(a+1), (d-2*roh)/2],corner=roh);
+      }      
+      
+ // ZAOBLENI ROHU    
+    hull() {
+        difference() {
+            union() {
+                translate([0,(MLAB_grid*(a+1))/2,0]) 
+                    roundcube([d-2*roh,MLAB_grid*(a+1),d-2*roh],center = true, corner= roh);
+                 
+                translate([(MLAB_grid*(b+1))/2,0,0])       
+                    roundcube([MLAB_grid*(b+1),d-2*roh,d-2*roh],corner= roh); 
+                  
+                translate([0, 0, h/2-d/2+2*roh])
+                    roundcylinder(h, (d/2-roh), corner = roh);
+            }
+            translate([0,(MLAB_grid*(a+1))/2 + d,0]) 
+                cube([20*d,MLAB_grid*(a+1)+d,20*d], center = true);
+             
+            translate([(MLAB_grid*(b+1))/2 + d,0,0]) 
+                cube([MLAB_grid*(b+1)+d,20*d,20*d], center = true);
+                    
+            }
+    }
+    
+    
+    
+    }
+}
+
 
 // test helix1.
 module helix1(rot1=0)
