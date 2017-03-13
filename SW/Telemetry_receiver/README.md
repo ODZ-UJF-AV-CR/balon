@@ -10,7 +10,7 @@ Recognised telemetry packets are processed parsed an uploaded to http://habhub.o
 
 The software needs [Pynmea2](https://github.com/Knio/pynmea2) library which could be installed by following command: 
 
-    pip install pynmea2
+    pip install pynmea2 crc16
 
 ### Program launch
 
