@@ -12,7 +12,7 @@ pocet_der2 = 11; //pocet der v ose x
 //OBECNE PARAMETRY KRABICKY
 //------------------------------------------------------------
 //BOCNICE
-vyska_bocnice=40;
+vyska_bocnice=60;
 tloustka_bocnice=3;
 
 

@@ -26,30 +26,17 @@ difference() {
  
 //Vytvoreni otvorů v přední stěně
 //--------------------------------------------------------
-/*
     union() {            
         translate([-((pocet_der2-1)*vzdalenost_der)/2,-vzdalenost_od_okraje-tloustka_bocnice/2,-(vyska_bocnice/2)])
         {
         //složí k posunu otvoru v násobku děr
-        posun_p1=1;    
-        translate([posun_p1*vzdalenost_der,0,0])   
-            USBI2C01A(tloustka_bocnice,vzdalenost_der);         
-    
-        posun_p2=4;    
-            translate([posun_p2*vzdalenost_der,0,0])   
-                I2CDIFF01A(tloustka_bocnice,vzdalenost_der);
-                    
-        posun_p3=20;    
-            translate([posun_p3*vzdalenost_der,0,0])   
-                CHLADICI_OTVORY(tloustka_bocnice,vzdalenost_der,4,vyska_bocnice);
-        
-             posun_p4=0;    
-            translate([posun_p4*vzdalenost_der,0,0])  
-            IR(tloustka_bocnice,vyska_bocnice);
-            
-            }
-            }
-*/
+            //dira pro LED
+            translate([3*vzdalenost_der,10,vyska_bocnice/2])  
+                rotate([90,0,0])
+                    cylinder(h=20, d = 5.5);        
+        }
+    }
+
 //Vytvoreni zadniho celicka krabicky
 //--------------------------------------------------------
 /*    translate([((pocet_der2-1)*vzdalenost_der)/2,(pocet_der1-1)*vzdalenost_der+vzdalenost_od_okraje+tloustka_bocnice/2,-(vyska_bocnice/2)])
