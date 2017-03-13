@@ -13,6 +13,8 @@ from datetime import datetime
 
 def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence as an argument
                                             # and returns sentence suitable for uploading to DB
+    if sentence[:6] != "$GPGGA":
+        return "parse_error"
     try:
         try: 
             if checksum_bool == False:
@@ -23,15 +25,21 @@ def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence
             return "checksum_error"
     except pynmea2.nmea.ParseError:
         return "parse_error"
+    
+    if None in (parsed.timestamp, parsed.lat, parsed.lat_dir, parsed.lon, parsed.lon_dir, parsed.altitude, parsed.num_sats):
+        return "gps_no_fix" 
 
     if parsed.lat_dir == 'S':
         parsed.lat = str(float(parsed.lat) * (-1))
     if parsed.lon_dir == 'W':
         parsed.lon = str(float(parsed.lon) * (-1))
+
     # Creates new sentence in format configured on Habitat's webpage
     new_sentence = "ODZUJF,%s,%s,%s,%s,%s" % (parsed.timestamp, parsed.lat, parsed.lon, parsed.altitude, parsed.num_sats)
     new_sentence = "$$" + new_sentence + "*" + str(checksum(new_sentence)) + '\n'
     return(new_sentence)
+
+    
 
 def make_data(sentence, callsign): # Creates data in format suitable for upload to DB
     sentence = b64encode(sentence) 
@@ -91,15 +99,19 @@ try:
 
             sentence = make_sentence(gps_output, True)
 
-            if sentence == "checksum_error": # Sentence is not uploaded, if it didn't pass the checksum, but is still logged
-                print "Checksum error - sentence not sent\n"
-                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Checksum_error" + "\n")
-                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Checksum_error" + "\n")
             
-            elif sentence == "parse_error": # If sentence couldn't be parsed, it is not uploaded and is logged only to raw logfile
+            if sentence == "parse_error": # If sentence couldn't be parsed, it is not uploaded and is logged only to raw logfile
                 print "Can't parse data - sentence not sent\n"
                 printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Parse_error" + "\n")
-            
+                index_raw += 1
+            elif sentence == "checksum_error": # Sentence is not uploaded, if it didn't pass the checksum, but is still logged
+                print "Checksum error - sentence not sent\n"
+                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Checksum_error" + "\n")
+                index_raw += 1
+            elif sentence == "gps_no_fix": # If NMEA data was uncomplete (without GPS fix), sentence it is not uploaded and is logged only to raw logfile
+                print "Uncomplete NMEA data (no GPS fix) - sentence not sent\n"
+                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "No_GPS_fix" + "\n")
+                index_raw += 1
             else:
                 print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
                 
@@ -118,6 +130,8 @@ try:
                         print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
                         printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
                         printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
+                        index_raw += 1
+                        index += 1
                         break
 
                     except Exception:
@@ -127,11 +141,9 @@ try:
                             print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
                             printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Upload_error" + "\n")
                             printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Upload_error" + "\n")
-
-            if sentence != "parse_error":
-                index += 1
-
-            index_raw += 1
+                            index_raw += 1
+                            index += 1
+            
 
         except serial.SerialException: # Close safely in case of port disconnection
             print "_Error! Closing the port...\n"
