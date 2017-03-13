@@ -20,7 +20,7 @@ def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence
             else:
                 parsed = pynmea2.parse(sentence)
         except pynmea2.ChecksumError:
-            return "wrong_checksum"
+            return "checksum_error"
     except pynmea2.nmea.ParseError:
         return "parse_error"
 
@@ -33,9 +33,31 @@ def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence
     new_sentence = "$$" + new_sentence + "*" + str(checksum(new_sentence)) + '\n'
     return(new_sentence)
 
+def make_data(sentence, callsign): # Creates data in format suitable for upload to DB
+    sentence = b64encode(sentence) 
+    data = {
+        "type": "payload_telemetry",
+        "data": {
+            "_raw": sentence
+            },
+        "receivers": {
+            callsign: {
+                "time_created": get_date(True),
+                "time_uploaded": get_date(True),
+                },
+            },
+    }
+    return data
+
 def checksum(sentence): # Returns crc16-citt checksum of ASCII string
     crc = crc16.crc16xmodem(sentence, 0xffff)
     return ('{:04X}'.format(crc))
+
+def get_date(format_bool):
+    if format_bool == True:
+        return (datetime.utcnow().isoformat("T") + "Z")
+    else:
+        return datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 
 
@@ -48,68 +70,68 @@ ser = serial.Serial(sys.argv[1], rtscts=True, dsrdtr=True)
 serial.timeout = 1
 #### 
 
-index = 0
-header = True
+index, index_raw = (0, 0)
 callsign = "ODZUJF"
-date = datetime.now().isoformat()
-printer = open(date + "_gps_output_log.txt", 'w') # Creates logfile with current date and time in its name
+date = get_date(False)
+
+printer = open(date + "_parsed_gps_output_log", 'w') # Creates logfile of sucesfully parsed sentences with current date and time in its name
+printer_raw = open(date + "_raw_gps_output_log.txt", 'w') # Creates logfile of all received data
+ # Writes HEADER to the logffile
+printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
+printer_raw.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
 
 print("\nSerial port " + sys.argv[1] + " opened. Waiting for GPS-NMEA data...\n") # Prints openning message
-
-
 
 try:
     while True: # Infinite loop waiting for data from configured serial port
         try:
             gps_output = ser.readline()
 
-            date = datetime.utcnow().isoformat("T") + "Z"
             print("Received: " + gps_output.rstrip('\n'))
+
             sentence = make_sentence(gps_output, True)
 
-            if sentence == "wrong_checksum": # Sentence is not uploaded if it didn't pass the checksum, but is still logged
+            if sentence == "checksum_error": # Sentence is not uploaded, if it didn't pass the checksum, but is still logged
                 print "Checksum error - sentence not sent\n"
-            elif sentence == "parse_error":
+                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Checksum_error" + "\n")
+                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Checksum_error" + "\n")
+            
+            elif sentence == "parse_error": # If sentence couldn't be parsed, it is not uploaded and is logged only to raw logfile
                 print "Can't parse data - sentence not sent\n"
+                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Parse_error" + "\n")
+            
             else:
                 print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
                 
-                sentence = b64encode(sentence) # Uploader to DB
-                data = {
-                    "type": "payload_telemetry",
-                    "data": {
-                        "_raw": sentence
-                        },
-                    "receivers": {
-                        callsign: {
-                            "time_created": date,
-                            "time_uploaded": date,
-                            },
-                        },
-                }
-                c = httplib.HTTPConnection("habitat.habhub.org") 
-                c.request(
-                    "PUT",
-                    "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(sentence).hexdigest(),
-                    json.dumps(data),  # BODY
-                    {"Content-Type": "application/json"}  # HEADERS
-                    )
+                for x in range(0,4):
+                    try:
+                        c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
+                        c.request(
+                            "PUT",
+                            "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence)).hexdigest(),
+                            json.dumps(make_data(sentence, callsign)),  # BODY
+                            {"Content-Type": "application/json"}  # HEADERS
+                            )
 
-                response = c.getresponse() # Prints response from DB or checksum error to the terminal
-                print "Status:", response.status, response.reason, "\n"  
+                        response = c.getresponse() # Prints response from DB
 
-            if header == True: # Writes HEADER to the logfile
-                printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
-                header = False
+                        print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
+                        printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
+                        printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
+                        break
 
-            if sentence == "wrong_checksum": # Writes entry to the logfile
-                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Wrong_checksum" + "\n")
-            elif sentence ==  "parse_error": 
-                pass
-            else:
-                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
-            
-            index += 1
+                    except Exception:
+                        if x < 3:
+                            print "No internet connection. Repeating upload... [" + str(x + 1) +"/3]" # In case of no internet connection repeats upload three times
+                        else:
+                            print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
+                            printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Upload_error" + "\n")
+                            printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Upload_error" + "\n")
+
+            if sentence != "parse_error":
+                index += 1
+
+            index_raw += 1
 
         except serial.SerialException: # Close safely in case of port disconnection
             print "_Error! Closing the port...\n"
@@ -119,3 +141,4 @@ except KeyboardInterrupt: # Close safely with "CTRL + C"
     print "_Program closed\n"
 
 printer.close()
+printer_raw.close()
