@@ -13,13 +13,16 @@ from datetime import datetime
 
 def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence as an argument
                                             # and returns sentence suitable for uploading to DB
-    try: 
-        if checksum_bool == False:
-            parsed = pynmea2.parse(sentence[:-4], checksum_bool)
-        else:
-            parsed = pynmea2.parse(sentence)
-    except pynmea2.ChecksumError:
-        return "wrong_checksum"
+    try:
+        try: 
+            if checksum_bool == False:
+                parsed = pynmea2.parse(sentence[:-4], checksum_bool)
+            else:
+                parsed = pynmea2.parse(sentence)
+        except pynmea2.ChecksumError:
+            return "wrong_checksum"
+    except pynmea2.nmea.ParseError:
+        return "parse_error"
 
     if parsed.lat_dir == 'S':
         parsed.lat = str(float(parsed.lat) * (-1))
@@ -64,8 +67,12 @@ try:
             print("Received: " + gps_output.rstrip('\n'))
             sentence = make_sentence(gps_output, True)
 
-            if sentence != "wrong_checksum": # Sentence is not uploaded if it didn't pass the checksum, but is still logged
-                print("Sending: " + sentence.rstrip('\n'))  # Prints sentence uploading to DB to the terminal              
+            if sentence == "wrong_checksum": # Sentence is not uploaded if it didn't pass the checksum, but is still logged
+                print "Checksum error - sentence not sent\n"
+            elif sentence == "parse_error":
+                print "Can't parse data - sentence not sent\n"
+            else:
+                print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
                 
                 sentence = b64encode(sentence) # Uploader to DB
                 data = {
@@ -90,17 +97,17 @@ try:
 
                 response = c.getresponse() # Prints response from DB or checksum error to the terminal
                 print "Status:", response.status, response.reason, "\n"  
-            else:
-                print "Checksum error - sentence not sent\n"
-   
+
             if header == True: # Writes HEADER to the logfile
                 printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
                 header = False
 
-            if sentence != "wrong_checksum": # Writes entry to the logfile
-                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
-            else:
+            if sentence == "wrong_checksum": # Writes entry to the logfile
                 printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Wrong_checksum" + "\n")
+            elif sentence ==  "parse_error": 
+                pass
+            else:
+                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
             
             index += 1
 
