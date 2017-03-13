@@ -8,71 +8,107 @@ import serial
 from base64 import b64encode
 from hashlib import sha256
 from datetime import datetime
-### testovaci knihovna
-import random
 
-def make_sentence (sentence):
-    parsed = pynmea2.parse(sentence, False)
-    ### iterace vysky letu pro testovani (aby habitat databaze nehazela error kvuli identickym zpravam)
-    parsed.altitude = str(round(random.uniform(40000,1),1))
-    ###
+
+
+def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence as an argument
+                                            # and returns sentence suitable for uploading to DB
+    try: 
+        if checksum_bool == False:
+            parsed = pynmea2.parse(sentence[:-4], checksum_bool)
+        else:
+            parsed = pynmea2.parse(sentence)
+    except pynmea2.ChecksumError:
+        return "wrong_checksum"
+
     if parsed.lat_dir == 'S':
         parsed.lat = str(float(parsed.lat) * (-1))
     if parsed.lon_dir == 'W':
         parsed.lon = str(float(parsed.lon) * (-1))
-    new_sentence = "ODZUJF,%s,%s,%s,%s" % (parsed.timestamp, parsed.lat, parsed.lon, parsed.altitude)
+    # Creates new sentence in format configured on Habitat's webpage
+    new_sentence = "ODZUJF,%s,%s,%s,%s,%s" % (parsed.timestamp, parsed.lat, parsed.lon, parsed.altitude, parsed.num_sats)
     new_sentence = "$$" + new_sentence + "*" + str(checksum(new_sentence)) + '\n'
     return(new_sentence)
 
-def checksum(sentence):
-    crc = str(hex(crc16.crc16xmodem(sentence, 0xffff)))
-    crc_part = crc[2:6]
-    return(crc_part.upper())
+def checksum(sentence): # Returns crc16-citt checksum of ASCII string
+    crc = crc16.crc16xmodem(sentence, 0xffff)
+    return ('{:04X}'.format(crc))
 
 
-#if len(sys.argv) < 2:
- #   print "Usage: python %s <sentence> [recv callsign]" % sys.argv[0]
-  #  sys.exit()
 
-#pozdeji pro vstup ze seriove linky
-#ser = serial.Serial('/dev/ttyACM0', timeout=3)
-#data = ser.readline()
+if len(sys.argv) < 2: # Terminate program, if run without defining port as an argument
+    print "Usage: python %s [recv port]" % sys.argv[0]
+    sys.exit()
 
-data = "$GPGGA,152225.00,5008.11103,S,01425.81157,W,2,07,1.25,317.1,M,44.3,M,,0000"
+#### only for testing with simulated GPS, might need some changes
+ser = serial.Serial(sys.argv[1], rtscts=True, dsrdtr=True)
+serial.timeout = 1
+#### 
 
-sentence = make_sentence(data)
+index = 0
+header = True
+callsign = "ODZUJF"
+date = datetime.now().isoformat()
+printer = open(date + "_gps_output_log.txt", 'w') # Creates logfile with current date and time in its name
 
-print(sentence)
+print("\nSerial port " + sys.argv[1] + " opened. Waiting for GPS-NMEA data...\n") # Prints openning message
 
 
-sentence = b64encode(sentence)
 
-callsign = "ODZUJF" #if len(sys.argv) > 2 else "HABTOOLS"
+try:
+    while True: # Infinite loop waiting for data from configured serial port
+        try:
+            gps_output = ser.readline()
 
-date = datetime.utcnow().isoformat("T") + "Z"
+            date = datetime.utcnow().isoformat("T") + "Z"
+            print("Received: " + gps_output.rstrip('\n'))
+            sentence = make_sentence(gps_output, True)
 
-data = {
-    "type": "payload_telemetry",
-    "data": {
-        "_raw": sentence
-        },
-    "receivers": {
-        callsign: {
-            "time_created": date,
-            "time_uploaded": date,
-            },
-        },
-}
+            if sentence != "wrong_checksum": # Sentence is not uploaded if it didn't pass the checksum, but is still logged
+                print("Sending: " + sentence.rstrip('\n'))  # Prints sentence uploading to DB to the terminal              
+                
+                sentence = b64encode(sentence) # Uploader to DB
+                data = {
+                    "type": "payload_telemetry",
+                    "data": {
+                        "_raw": sentence
+                        },
+                    "receivers": {
+                        callsign: {
+                            "time_created": date,
+                            "time_uploaded": date,
+                            },
+                        },
+                }
+                c = httplib.HTTPConnection("habitat.habhub.org") 
+                c.request(
+                    "PUT",
+                    "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(sentence).hexdigest(),
+                    json.dumps(data),  # BODY
+                    {"Content-Type": "application/json"}  # HEADERS
+                    )
 
-c = httplib.HTTPConnection("habitat.habhub.org")
-c.request(
-    "PUT",
-    "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(sentence).hexdigest(),
-    json.dumps(data),  # BODY
-    {"Content-Type": "application/json"}  # HEADERS
-    )
+                response = c.getresponse() # Prints response from DB or checksum error to the terminal
+                print "Status:", response.status, response.reason, "\n"  
+            else:
+                print "Checksum error - sentence not sent\n"
+   
+            if header == True: # Writes HEADER to the logfile
+                printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
+                header = False
 
-response = c.getresponse()
+            if sentence != "wrong_checksum": # Writes entry to the logfile
+                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
+            else:
+                printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Wrong_checksum" + "\n")
+            
+            index += 1
 
-print response.status, response.reason
-print response.read()
+        except serial.SerialException: # Close safely in case of port disconnection
+            print "_Error! Closing the port...\n"
+            break
+
+except KeyboardInterrupt: # Close safely with "CTRL + C"
+    print "_Program closed\n"
+
+printer.close()
