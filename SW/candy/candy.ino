@@ -29,7 +29,7 @@ SoftwareSerial mySerial(18, 19); // RX, TX
 
 const int chipSelect = 4;
 int RESET = 0;
-uint8_t count = 0;
+uint16_t count = 0;
 
 
 void setup()
