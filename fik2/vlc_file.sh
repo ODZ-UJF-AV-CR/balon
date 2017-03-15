@@ -4,11 +4,14 @@
 
 DEVICE=1
 USER=odroid
+OUTF='file/ps:/data/balon/video/'$(date '+%F-%H%M%S.avi')
+
+echo Saving to $OUTF
 
 if [ $( id -u ) == 0 ] 
 then
   su -c $0 $USER
 else
-  v4l2-ctl -d 2 --set-fmt-video=width=1920,height=1080,pixelformat=1
-  cvlc v4l2:///dev/video${DEVICE}:chroma=h264:width=1920:height=1080:fps=30 --sout 'file/ps:/data/balon/video/video-test.avi' 
+  v4l2-ctl -d ${DEVICE} --set-fmt-video=width=1920,height=1080,pixelformat=1
+  cvlc v4l2:///dev/video${DEVICE}:chroma=h264:width=1920:height=1080:fps=30 --sout $OUTF
 fi
