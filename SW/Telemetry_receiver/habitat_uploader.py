@@ -39,7 +39,6 @@ def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence
     new_sentence = "$$" + new_sentence + "*" + str(checksum(new_sentence)) + '\n'
     return(new_sentence)
 
-    
 
 def make_data(sentence, callsign): # Creates data in format suitable for upload to DB
     sentence = b64encode(sentence) 
@@ -57,9 +56,11 @@ def make_data(sentence, callsign): # Creates data in format suitable for upload 
     }
     return data
 
+
 def checksum(sentence): # Returns crc16-citt checksum of ASCII string
     crc = crc16.crc16xmodem(sentence, 0xffff)
     return ('{:04X}'.format(crc))
+
 
 def get_date(format_bool):
     if format_bool == True:
@@ -77,7 +78,6 @@ if len(sys.argv) < 2: # Terminate program, if run without defining port as an ar
 ser = serial.Serial(sys.argv[1], rtscts=True, dsrdtr=True)
 serial.timeout = 1
 #### 
-
 index, index_raw = (0, 0)
 callsign = "ODZUJF"
 date = get_date(False)
@@ -93,24 +93,26 @@ print("\nSerial port " + sys.argv[1] + " opened. Waiting for GPS-NMEA data...\n"
 try:
     while True: # Infinite loop waiting for data from configured serial port
         try:
-            gps_output = ser.readline()
+            gps_output = ser.readline().rstrip('\n\r')
+            if gps_output[0] == "\r":
+                gps_output = gps_output[1:]
 
-            print("Received: " + gps_output.rstrip('\n'))
+            print("Received: " + gps_output)
 
             sentence = make_sentence(gps_output, True)
 
             
             if sentence == "parse_error": # If sentence couldn't be parsed, it is not uploaded and is logged only to raw logfile
                 print "Can't parse data - sentence not sent\n"
-                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Parse_error" + "\n")
+                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Parse_error" + "\n")
                 index_raw += 1
             elif sentence == "checksum_error": # Sentence is not uploaded, if it didn't pass the checksum, but is still logged
                 print "Checksum error - sentence not sent\n"
-                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Checksum_error" + "\n")
+                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Checksum_error" + "\n")
                 index_raw += 1
             elif sentence == "gps_no_fix": # If NMEA data was uncomplete (without GPS fix), sentence it is not uploaded and is logged only to raw logfile
                 print "Uncomplete NMEA data (no GPS fix) - sentence not sent\n"
-                printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "No_GPS_fix" + "\n")
+                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "No_GPS_fix" + "\n")
                 index_raw += 1
             else:
                 print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
@@ -128,8 +130,8 @@ try:
                         response = c.getresponse() # Prints response from DB
 
                         print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
-                        printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
-                        printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + str(response.reason) + "\n")
+                        printer.write('{:05}'.format(index) + "," + gps_output + "," + str(response.reason) + "\n")
+                        printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + str(response.reason) + "\n")
                         index_raw += 1
                         index += 1
                         break
@@ -139,8 +141,8 @@ try:
                             print "No internet connection. Repeating upload... [" + str(x + 1) +"/3]" # In case of no internet connection repeats upload three times
                         else:
                             print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
-                            printer.write('{:05}'.format(index) + "," + str(gps_output.rstrip('\n')) + "," + "Upload_error" + "\n")
-                            printer_raw.write('{:05}'.format(index_raw) + "," + str(gps_output.rstrip('\n')) + "," + "Upload_error" + "\n")
+                            printer.write('{:05}'.format(index) + "," + gps_output + "," + "Upload_error" + "\n")
+                            printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Upload_error" + "\n")
                             index_raw += 1
                             index += 1
             
