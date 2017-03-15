@@ -129,7 +129,7 @@ void loop()
     {
       sensor -= 1023 ;
     }
-    sensor +=28; // Add offset to ground
+    //sensor +=30; // Add offset to ground
     if ((sensor>=0)&&(buffer[sensor]<65535)&&(oldValue<sensor)) buffer[sensor]++;
     oldValue = sensor;
     for (int i=0; i<100; i++) {digitalWrite(RESET, LOW);} // integration cca 500 us
