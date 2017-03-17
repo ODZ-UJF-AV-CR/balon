@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import sys
 import time
 import serial
 
@@ -18,26 +19,31 @@ import serial
 # 
 # OK
 
-def send(data):
-    try:
-        ser.write(data)
-    except Exception as e:
-        print "Couldn't send data to serial port: %s" % str(e)
-    else:
-        try:
-            data = ser.read(100)
-        except Exception as e:
-            print "Couldn't read data from serial port: %s" % str(e)
-        else:
-            if data:  # If data = None, timeout occurr
-                n = ser.inWaiting()
-                if n > 0: data += ser.read(n)
-                return data
+def send(cmd):
+    with serial.Serial("/dev/ttyUSB0", 9600, timeout=10) as s:
+	s.write(cmd + "\r\n")
 
-time.sleep(0.5)
-ser = serial.Serial('/dev/ttyUSB0',  9600, timeout=2)
-try:
-   r = send('AT+CFUN?\r')
-   print(r)
-finally:
-   ser.close()
+	while True:
+		line = s.readline()
+		if line is None:
+			break
+		line = line.strip().upper()
+
+		print line		
+
+		if line == "OK":
+			return True
+
+		if line == "ERROR":
+			return False
+
+	return False
+
+
+def main():
+	if not send(sys.argv[1]):
+		sys.exit(1)
+
+if __name__ == "__main__":
+	main()
+

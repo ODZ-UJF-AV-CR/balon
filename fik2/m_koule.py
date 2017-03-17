@@ -17,7 +17,7 @@ baud = 9600
 
 
 def handle_data(data):
-  sys.stderr.write(data + "\n")
+  #sys.stderr.write(data + "\n")
   datafname = "/data/balon/data_koule.csv"
   with open(datafname, "a") as nbf:
     nbf.write(data)

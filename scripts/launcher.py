@@ -24,19 +24,20 @@ def start_process(child):
 
 children = [
 	{
-		'name': "sleep_10",
-		'cli': "sleep 10",
+		'name': "monitor",
+		'cli': "python /home/odroid/git/balon/scripts/monitor_p.py",
 		'on_exit': start_process,
 		'stdout': open('/dev/zero')
 	},
 	{
-		'name': "sleep_3",
-		'cli': "sleep 3",
+		'name': "m_koule",
+		'cli': "python /home/odroid/git/balon/fik2/m_koule.py",
+#		'on_exit': lambda: children[0].terminate(),
 		'stdout': open('/dev/zero')
 	},
 	{
-		'name': "sleep_13",
-		'cli': "sleep 13",
+		'name': 'vlc_file',
+		'cli': "/home/odroid/git/balon/fik2/vlc_file.sh",
 		'stdout': open('/dev/zero')
 	}
 ]
@@ -65,7 +66,7 @@ def main():
 				child['stderr_residue'] = split.pop()
 
 				for line in split:
-					logging.warning('%s on stderr: %s' % (process_name, line))
+					sys.stderr.write("[%s] %s\n" % (process_name, line))
 			except Exception as e:
 				if not child['popen'].poll():
 					logging.warning('%s: read from pipe exception: %s' % (process_name, e))
