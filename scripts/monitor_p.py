@@ -92,10 +92,10 @@ class GpsPoller(threading.Thread):
 
 
 def height(state):
-	if state.have("GPS_Alt"):
+	if state["GPS_Fix"] > 2 and state.have("GPS_Alt", max_age=10.0):
 		return state["GPS_Alt"]
 
-	if state.have("Altimet_Alt"):
+	if state.have("Altimet_Alt") and not math.isnan(state["Altimet_Alt"]):
 		return state["Altimet_Alt"]
 
 	return 0
@@ -197,6 +197,7 @@ def readout():
 					f.write("Epoch\t" + status_i2c['header'] + status_gps['header'] + "\n")
 					write_header = False
 				f.write(("%d\t" % state["Epoch"]) + status_i2c['record'] + status_gps['record'] + "\n")
+				f.flush()
 			except IOError as e:
 				logging.error("writing CSV: %s" % e)
 				# TODO
@@ -210,8 +211,8 @@ def main():
 	radio_okay = True
 
 	logging.basicConfig(level=logging.INFO,
-		format='[%(levelname)s] %(message)s',
-   	#	format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
+	#	format='[%(levelname)s] %(message)s',
+   		format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s',
 		filename=time.strftime("/data/balon/monitor-%F-%H%M%S.log", time.gmtime())
 	)
 
