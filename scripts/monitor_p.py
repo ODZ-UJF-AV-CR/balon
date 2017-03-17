@@ -178,12 +178,17 @@ def sms_trigger():
 
 		logging.info("Payload: %s" % payload)
 
+		while (state["Epoch"] - last_sms["Epoch"]) < 15:
+			state = yield
+
 
 def readout():
 	gpsp = GpsPoller()
 	gpsp.start()
 
 	state = StateDict()
+	state["Epoch"] = 0
+	state["GPS_Fix"] = 1
 
 	with open(g.data_dir+"data_log.csv", "a") as f:
 		write_header = True

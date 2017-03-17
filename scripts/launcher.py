@@ -31,7 +31,8 @@ children = [
 	},
 	{
 		'name': "m_koule",
-		'cli': "python /home/odroid/git/balon/fik2/m_koule.py",
+		'cli': "/home/odroid/git/balon/fik2/m_koule.sh",
+		'on_exit': start_process,
 #		'on_exit': lambda: children[0].terminate(),
 		'stdout': open('/dev/zero')
 	},
