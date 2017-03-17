@@ -28,6 +28,10 @@ The software needs a hardware radio modem.  The modem is accessed trought an ser
 
     python habitat_uploader.py /dev/ttyUSB0
 
+### Callsign setting
+
+In order to properly display data in HabHub Tracker, the callsign variable in the script must be set to the same value as was earlier configured on Habitat's [Genpayload](http://habitat.habhub.org/genpayload/) webpage. In case the callsign need to be changed, go to Genpayload webpage and under "payload configuration documents" click "start from existing". Then search for the name of your payload (curently set to "LetFik2") and open the latest version of the document (it should be the most bottom one). There under "Parser configuration" choose "edit" and change "Callsign" field to the new value. Don't forget to save this configuration and then also the whole document. Now just simply change the callsign variable in the script to the same value as configured and from now on data should be uploaded and interpreted under new callsign. Note that you don't need to change callsign in order to change the name of the payload.
+
 
 
 
