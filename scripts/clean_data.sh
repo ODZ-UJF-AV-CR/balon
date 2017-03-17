@@ -7,7 +7,7 @@ if [ x$r == "xy" ]; then
   rm -v data_*.csv
   rm -v monitor-*.log 
   rm -vrf img
-  rm -vrf videos
+  rm -vrf video
 else
   echo Ok, not removing anything.
 fi
