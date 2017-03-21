@@ -52,7 +52,7 @@ void setup()
   swSerial.begin(9600);
   //mySerial.println("#Cvak...");
 
-  Serial.print("#Initializing SD card...");
+  swSerial.print("#Initializing SD card...");
   // make sure that the default chip select pin is set to
   // output, even if you don't use it:
   pinMode(10, OUTPUT);
@@ -60,11 +60,11 @@ void setup()
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) 
   {
-    Serial.println("#Card failed, or not present");
+    swSerial.println("#Card failed, or not present");
     // don't do anything more:
     return;
   }
-  Serial.println("#card initialized.");
+  swSerial.println("#card initialized.");
   
 // Read Analog Differential without gain (read datashet of ATMega1280 and ATMega2560 for refference)
 // Use analogReadDiff(NUM)
@@ -105,6 +105,7 @@ int oldValue = 0;  // Variable for filtering death time double detection
 void loop()
 {
   for(int x=0; x<((5*60)/11); x++)  // 5 minutes of radiation measurement
+//  for(int x=0; x<3; x++)  // 5 minutes of radiation measurement
   {
     uint8_t lo, hi;
     int sensor;
@@ -158,7 +159,7 @@ void loop()
       String dataString = "$CANDY,";
       //String toModem = "";
   
-      dataString += String(count); 
+      dataString += String(count++); 
       dataString += ",";
     
       for(int n=0; n<(511+31); n++)
@@ -205,13 +206,13 @@ void loop()
       if (dataFile) 
       {
         dataFile.println(dataString);  // write to SDcard
-        Serial.println(dataString);    // print to terminal
+        swSerial.println(dataString);    // print to terminal
         dataFile.close();
       }  
       // if the file isn't open, pop up an error:
       else 
       {
-        Serial.println("#error opening datalog.txt");
+        swSerial.println("#error opening datalog.txt");
       }
     }  
   }
@@ -225,7 +226,13 @@ void loop()
     digitalWrite(RELE_ON, HIGH);  
     delay(500);
     digitalWrite(RELE_ON, LOW);
-      
+    
+    delay(1000);
+    
+    // airborne <2g; 40 configuration bytes
+    const char cmd[44]={0xB5, 0x62 ,0x06 ,0x24 ,0x24 ,0x00 ,0xFF ,0xFF ,0x07 ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x10 ,0x27 , 0x00 ,0x00 ,0x05 ,0x00 ,0xFA ,0x00 ,0xFA ,0x00 ,0x64 ,0x00 ,0x2C ,0x01 ,0x00 ,0x3C ,0x00 ,0x00 , 0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x53 ,0x0A};
+    for (int n=0;n<44;n++) Serial.write(cmd[n]); 
+    
     delay(26000); // Delay to fix  
     
     boolean flag = false;
@@ -254,13 +261,13 @@ void loop()
     if (dataFile) 
     {
       dataFile.print(dataString);  // write to SDcard
-      Serial.print(dataString);    // print to terminal
+      swSerial.print(dataString);    // print to terminal
       dataFile.close();
     }  
     // if the file isn't open, pop up an error:
     else 
     {
-      Serial.println("#error opening datalog.txt");
+      swSerial.println("#error opening datalog.txt");
     }
     
     digitalWrite(RELE_ON, LOW);  // Rele switch OFF
