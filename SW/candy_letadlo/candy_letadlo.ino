@@ -3,15 +3,26 @@
  
 SDcard
 ------
-DAT3 SS 4 B4
-CMD MOSI 5 B5
-DAT0 MISO 6 B6
-CLK SCK 7 B7
+DAT3   SS   4 B4
+CMD    MOSI 5 B5
+DAT0   MISO 6 B6
+CLK    SCK  7 B7
 
-SERIAL 2
+SERIAL 2 (not necessary to connect)
 --------
 RX 18 PC2
 TX 19 PC3
+
+ANALOG
+------
++      A0  PA0
+-      A1  PA1
+RESET  0   PB0
+
+RELE
+----
+RELE_ON   11    PD3
+RELE_OFF  12    PD4
 
 The following needs to be added to the line mentioning the atmega644 in
 /usr/share/arduino/libraries/SD/utility/Sd2PinMap.h:
