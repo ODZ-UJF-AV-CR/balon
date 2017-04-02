@@ -250,7 +250,7 @@ void loop()
       if (noise > 0) loDose=buffer[noise-1];
     
       int hiDose=0;
-      for(int n=noise+10; n<(511+31); n++)
+      for(int n=noise+7; n<(511+31); n++)
       {
         hiDose += buffer[n];
       }
@@ -271,9 +271,16 @@ void loop()
         //swSerial.println(dataString);  // print to terminal
         
         digitalWrite(LED, LOW);  // Blink for Dasa
-        delay(20);
+        delay(10);
         digitalWrite(LED, HIGH);  
-
+        if (hiDose >0)
+        {
+          delay(10);
+          digitalWrite(LED, LOW);  // Blink for Dasa + zaric
+          delay(10);
+          digitalWrite(LED, HIGH);  
+        }
+        
         dataFile.close();
       }  
       // if the file isn't open, pop up an error:
