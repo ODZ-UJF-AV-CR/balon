@@ -106,7 +106,7 @@ void setup()
   
 // Read Analog Differential without gain (read datashet of ATMega1280 and ATMega2560 for refference)
 // Use analogReadDiff(NUM)
-// NUM	|	POS PIN		|	NEG PIN		| 	GAIN
+//   NUM	|	POS PIN	  	        |	NEG PIN		        | 	GAIN
 //	0	|	A0			|	A1			|	1x
 //	1	|	A1			|	A1			|	1x
 //	2	|	A2			|	A1			|	1x
@@ -161,16 +161,21 @@ void loop()
     {
       digitalWrite(RELE_OFF, LOW);  // Rele switch ON
       digitalWrite(RELE_ON, HIGH);  
-      delay(500);
+      delay(200);
       digitalWrite(RELE_ON, LOW);
       
-      delay(500);  // Start GPS fix aquisition
+      delay(1000);  // Start GPS 
       
       // airborne <2g; 40 configuration bytes
       const char cmd[44]={0xB5, 0x62 ,0x06 ,0x24 ,0x24 ,0x00 ,0xFF ,0xFF ,0x07 ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x10 ,0x27 , 0x00 ,0x00 ,0x05 ,0x00 ,0xFA ,0x00 ,0xFA ,0x00 ,0x64 ,0x00 ,0x2C ,0x01 ,0x00 ,0x3C ,0x00 ,0x00 , 0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x53 ,0x0A};
       for (int n=0;n<44;n++) Serial.write(cmd[n]); 
     }
     
+    digitalWrite(RESET, HIGH);   // Reset peak detector
+    digitalWrite(RESET, HIGH);   // Reset peak detector
+    digitalWrite(RESET, HIGH);   // Reset peak detector
+    digitalWrite(RESET, HIGH);   // Reset peak detector
+    digitalWrite(RESET, HIGH);   // Reset peak detector
     digitalWrite(RESET, HIGH);   // Reset peak detector
     digitalWrite(RESET, HIGH);   // Reset peak detector
     digitalWrite(RESET, HIGH);   // Reset peak detector
@@ -245,7 +250,7 @@ void loop()
       if (noise > 0) loDose=buffer[noise-1];
     
       int hiDose=0;
-      for(int n=noise+20; n<(511+31); n++)
+      for(int n=noise+10; n<(511+31); n++)
       {
         hiDose += buffer[n];
       }
@@ -284,11 +289,43 @@ void loop()
     String dataString = "";
     char incomingByte; 
     
+    
+    for(int n=0; n<30000; n++)    // flush USART buffer
+    {
+      if (Serial.available()) 
+      {
+        // read the incoming byte:
+        incomingByte = Serial.read();
+      }
+    }
+    
+    int parse = 0;
+    for(int n=0; n<30000; n++)    // Skip first GPRMC
+    {
+      if (Serial.available()) 
+      {
+        // read the incoming byte:
+        incomingByte = Serial.read();
+        switch (incomingByte) 
+        {
+          case 'C':
+            parse=1;
+            break;
+          case ',':
+            if (parse==1) parse=2;
+            break;
+          default:
+            parse=0;
+        }       
+      }
+      if (parse==2) break;
+    }
+    
     boolean flag = false;
     int messages = 0;
     for(int n=0; n<30000; n++)
     {
-      if (Serial.available() > 0) 
+      if (Serial.available()) 
       {
         // read the incoming byte:
         incomingByte = Serial.read();
@@ -310,7 +347,7 @@ void loop()
     if (dataFile) 
     {
       dataFile.print(dataString);  // write to SDcard
-      swSerial.print(dataString);    // print to terminal
+      swSerial.print(dataString);  // print to terminal
       dataFile.close();
     }  
     // if the file isn't open, pop up an error:
@@ -321,7 +358,7 @@ void loop()
     
     digitalWrite(RELE_ON, LOW);  // Rele switch OFF
     digitalWrite(RELE_OFF, HIGH);  
-    delay(500);
+    delay(200);
     digitalWrite(RELE_OFF, LOW);
   }
 }
