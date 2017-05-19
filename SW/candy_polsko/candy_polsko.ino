@@ -1,5 +1,6 @@
 /*
   CANDY based on Mighty 1284p
+  Poland special edition
  
 SDcard
 ------
@@ -66,7 +67,7 @@ TX1/INT1 (D 11) PD3 17|        |24 PC2 (D 18) TCK
 #include "wiring_private.h"
 #include <SoftwareSerial.h>
 
-#define MSG_NO 20    // number of logged NMEA messages
+#define MSG_NO 10    // number of logged NMEA messages
 
 #define RELE_ON   11    // PD3
 #define RELE_OFF  12    // PD4
@@ -88,9 +89,9 @@ void setup()
    }
 
   swSerial.begin(9600);
-  //mySerial.println("#Cvak...");
+  swSerial.println("#Cvak...");
 
-  swSerial.print("#Initializing SD card...");
+  Serial.print("#Initializing SD card...");
   // make sure that the default chip select pin is set to
   // output, even if you don't use it:
   pinMode(10, OUTPUT);
@@ -98,11 +99,11 @@ void setup()
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) 
   {
-    swSerial.println("#Card failed, or not present");
+    Serial.println("#Card failed, or not present");
     // don't do anything more:
     return;
   }
-  swSerial.println("#card initialized.");
+  Serial.println("#card initialized.");
   
 // Read Analog Differential without gain (read datashet of ATMega1280 and ATMega2560 for refference)
 // Use analogReadDiff(NUM)
@@ -134,15 +135,11 @@ void setup()
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);  
   
-  digitalWrite(RELE_ON, LOW);  // Rele switch OFF
-  digitalWrite(RELE_OFF, HIGH);  
-  delay(500);
-  digitalWrite(RELE_OFF, LOW);
 }
 
 int oldValue = 0;  // Variable for filtering death time double detection
 
-#define MEASUREMENTS  25   // cca 5 minutes of radiation measurement
+#define MEASUREMENTS  1   
 
 void loop()
 {
@@ -157,6 +154,7 @@ void loop()
       buffer[n]=0;
     }
     
+    /*
     if (x == (MEASUREMENTS-2))    // cca 26 s delay for GPS fix (cca 2 measurements)
     {
       digitalWrite(RELE_OFF, LOW);  // Rele switch ON
@@ -170,6 +168,7 @@ void loop()
       const char cmd[44]={0xB5, 0x62 ,0x06 ,0x24 ,0x24 ,0x00 ,0xFF ,0xFF ,0x07 ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x10 ,0x27 , 0x00 ,0x00 ,0x05 ,0x00 ,0xFA ,0x00 ,0xFA ,0x00 ,0x64 ,0x00 ,0x2C ,0x01 ,0x00 ,0x3C ,0x00 ,0x00 , 0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x53 ,0x0A};
       for (int n=0;n<44;n++) Serial.write(cmd[n]); 
     }
+    */
     
     digitalWrite(RESET, HIGH);   // Reset peak detector
     digitalWrite(RESET, HIGH);   // Reset peak detector
@@ -268,16 +267,16 @@ void loop()
       if (dataFile) 
       {
         dataFile.println(dataString);  // write to SDcard
-        //swSerial.println(dataString);  // print to terminal
+        Serial.println(dataString);  // print to terminal
         
         digitalWrite(LED, LOW);  // Blink for Dasa
-        delay(10);
+        delay(20);
         digitalWrite(LED, HIGH);  
         if (hiDose >0)
         {
           delay(100);
           digitalWrite(LED, LOW);  // Blink for Dasa + zaric
-          delay(10);
+          delay(20);
           digitalWrite(LED, HIGH);  
         }
         
@@ -303,7 +302,7 @@ void loop()
       {
         // read the incoming byte:
         incomingByte = Serial.read();
-      }
+      } else break;
     }
     
     int parse = 0;
@@ -354,7 +353,7 @@ void loop()
     if (dataFile) 
     {
       dataFile.print(dataString);  // write to SDcard
-      swSerial.print(dataString);  // print to terminal
+      Serial.print(dataString);  // print to terminal
       dataFile.close();
     }  
     // if the file isn't open, pop up an error:
@@ -363,10 +362,6 @@ void loop()
       swSerial.println("#error opening datalog.txt");
     }
     
-    digitalWrite(RELE_ON, LOW);  // Rele switch OFF
-    digitalWrite(RELE_OFF, HIGH);  
-    delay(200);
-    digitalWrite(RELE_OFF, LOW);
   }
 }
 
