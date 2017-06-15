@@ -1,6 +1,6 @@
 /*
   CANDY based on Mighty 1284p
-  Poland special edition
+  L410 special edition for Physical Week
  
 SDcard
 ------
