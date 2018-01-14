@@ -1,4 +1,0 @@
-//Konfigurace pro otvory
-
-
-
