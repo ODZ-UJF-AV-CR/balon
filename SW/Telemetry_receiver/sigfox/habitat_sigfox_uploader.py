@@ -75,11 +75,11 @@ def get_date(format_bool):
 
 def sigfox_decode(sigfoxmsg):
 
-    latd     = 16 * (16 * (16 * (16 * (16 * trchar(sigfoxmsg[0]) + trchar(sigfoxmsg[1])) + trchar(sigfoxmsg[2])) + trchar(sigfoxmsg[3])) + trchar(sigfoxmsg[4])) + trchar(sigfoxmsg[5]);
-    lond     = 16 * (16 * (16 * (16 * (16 * trchar(sigfoxmsg[6]) + trchar(sigfoxmsg[7])) + trchar(sigfoxmsg[8])) + trchar(sigfoxmsg[9])) + trchar(sigfoxmsg[10])) + trchar(sigfoxmsg[11]);
-    h         = 16*(16*(16*trchar(sigfoxmsg[12]) + trchar(sigfoxmsg[13])) + trchar(sigfoxmsg[14])) + trchar(sigfoxmsg[15]);
-    tmcu     = 16 * (16 * (16 * trchar(sigfoxmsg[16]) + trchar(sigfoxmsg[17])) + trchar(sigfoxmsg[18])) + trchar(sigfoxmsg[19]);
-    vaccu     = 16 * (16 * (16 * trchar(sigfoxmsg[20]) + trchar(sigfoxmsg[21])) + trchar(sigfoxmsg[22])) + trchar(sigfoxmsg[23]);
+    latd     = 16 * (16 * (16 * (16 * (16 * eval(sigfoxmsg[0]) + eval(sigfoxmsg[1])) + eval(sigfoxmsg[2])) + eval(sigfoxmsg[3])) + eval(sigfoxmsg[4])) + eval(sigfoxmsg[5]);
+    lond     = 16 * (16 * (16 * (16 * (16 * eval(sigfoxmsg[6]) + eval(sigfoxmsg[7])) + eval(sigfoxmsg[8])) + eval(sigfoxmsg[9])) + eval(sigfoxmsg[10])) + eval(sigfoxmsg[11]);
+    h         = 16*(16*(16*eval(sigfoxmsg[12]) + eval(sigfoxmsg[13])) + eval(sigfoxmsg[14])) + eval(sigfoxmsg[15]);
+    tmcu     = 16 * (16 * (16 * eval(sigfoxmsg[16]) + eval(sigfoxmsg[17])) + eval(sigfoxmsg[18])) + eval(sigfoxmsg[19]);
+    vaccu     = 16 * (16 * (16 * eval(sigfoxmsg[20]) + eval(sigfoxmsg[21])) + eval(sigfoxmsg[22])) + eval(sigfoxmsg[23]);
 
     lat = latd * 360.0 / (float)0x01000000;
 
