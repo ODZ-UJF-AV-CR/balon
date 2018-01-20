@@ -75,16 +75,18 @@ def get_date(format_bool):
 
 def sigfox_decode(sigfoxmsg):
 
-    latd     = 16 * (16 * (16 * (16 * (16 * eval(sigfoxmsg[0]) + eval(sigfoxmsg[1])) + eval(sigfoxmsg[2])) + eval(sigfoxmsg[3])) + eval(sigfoxmsg[4])) + eval(sigfoxmsg[5]);
-    lond     = 16 * (16 * (16 * (16 * (16 * eval(sigfoxmsg[6]) + eval(sigfoxmsg[7])) + eval(sigfoxmsg[8])) + eval(sigfoxmsg[9])) + eval(sigfoxmsg[10])) + eval(sigfoxmsg[11]);
-    h         = 16*(16*(16*eval(sigfoxmsg[12]) + eval(sigfoxmsg[13])) + eval(sigfoxmsg[14])) + eval(sigfoxmsg[15]);
-    tmcu     = 16 * (16 * (16 * eval(sigfoxmsg[16]) + eval(sigfoxmsg[17])) + eval(sigfoxmsg[18])) + eval(sigfoxmsg[19]);
-    vaccu     = 16 * (16 * (16 * eval(sigfoxmsg[20]) + eval(sigfoxmsg[21])) + eval(sigfoxmsg[22])) + eval(sigfoxmsg[23]);
-
-    lat = latd * 360.0 / (float)0x01000000;
-
-    lon = lond * 360.0 / (float)0x01000000;
-
+    lat = int(sigfoxmsg[0:6], 16) 
+    lon = int(sigfoxmsg[6:12], 16)
+    h = int(sigfoxmsg[12:16], 16)
+    tmcu = int(sigfoxmsg[16:20], 16)
+    vaccu = int(sigfoxmsg[20:24], 16)
+    
+    tmcu =  0.171417*tmcu - 279.38
+    vaccu = (5.681*3.3 / 4096.0) * vaccu
+    lat = lat * 360.0 / 16777216.0
+    lon = lon * 360.0 / 16777216.0
+    
+    return({"latitude":lat,"longitude":lon, "elevation":h, "MCU_temp":tmcu, "bat_voltage":vaccu})
 
 if len(sys.argv) < 2: # Terminate program, if run without defining port as an argument
     print "Usage: python %s [recv port]" % sys.argv[0]
