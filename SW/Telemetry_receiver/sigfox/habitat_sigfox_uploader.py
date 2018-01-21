@@ -93,11 +93,6 @@ if len(sys.argv) < 2: # Terminate program, if run without defining port as an ar
     sys.exit()
 
 
-ser = serial.Serial(sys.argv[1], rtscts=True, dsrdtr=True)
-serial.timeout = 1
-
-index, index_raw, index_candy, noise, flux = (0, 0, 0, 0, 0)
-time, latitude, longtitude, altitude = (0, 0, 0, 0)
 date = get_date(False)
 
 printer = open(date + "_parsed_balloon_output_log", 'w') # Creates logfile of sucesfully parsed sentences with current date and time in its name
