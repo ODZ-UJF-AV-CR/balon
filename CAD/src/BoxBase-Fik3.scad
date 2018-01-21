@@ -120,7 +120,7 @@ mirror([0,1,0]) deska();
 
     //Otvor na dráty
         translate([-5, ((MLAB_grid*(a-1))+2*o)/2,tld])
-    cube([16,MLAB_grid-d,2*rantv    ],center = true);
+    cube([17,MLAB_grid-d,2*rantv    ],center = true);
   
 /*  // Konkrétní otvory procházející plošným spojem
  translate([ot+MLAB_grid*1, o, tld/2])
@@ -150,7 +150,7 @@ mirror([0,1,0]) deska();
 
 
 // Přepážka 1 - u otvoru na dráty
-       translate([3.5, o+MLAB_grid*1.5, 20/2])
+       translate([4.2, o+MLAB_grid*1.5, 20/2])
        cube([tp, MLAB_grid*(a)-0.6, 20], center = true);
 
  // Přepážka 2
