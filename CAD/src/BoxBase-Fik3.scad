@@ -29,7 +29,7 @@ rants = 1.2; //šířka rantlíku
 pomoc_kraj = rants+(2*draz+okraj)/2;
 
 vt = h-6-c; // Výška trubek
-po = 3.1; // Vnitří průměr trubky
+po = 2.9; // Vnitří průměr trubky
 pt = po + 2.5; //Vnější průměr trubky
 
 vp = vt-9; // Výška přepážky 2
