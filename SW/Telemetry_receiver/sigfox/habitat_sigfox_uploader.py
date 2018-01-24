@@ -6,6 +6,10 @@ import crc16
 from base64 import b64encode
 from hashlib import sha256
 from datetime import datetime
+from BaseHTTPServer import HTTPServer
+from BaseHTTPServer import BaseHTTPRequestHandler
+import urlparse
+
 
 
 ######################## CALLSIGN SETTINGS ########################
@@ -14,6 +18,26 @@ callsign = "LetFik3"
 
 ###################################################################
 
+
+
+def get_query_field(url, field):
+    """
+    Given a URL, return a list of values for the given ``field`` in the
+    URL's query string.
+    
+    >>> get_query_field('http://example.net', field='foo')
+    []
+    
+    >>> get_query_field('http://example.net?foo=bar', field='foo')
+    ['bar']
+    
+    >>> get_query_field('http://example.net?foo=bar&foo=baz', field='foo')
+    ['bar', 'baz']
+    """
+    try:
+        return urlparse.parse_qs(urlparse.urlparse(url).query)[field]
+    except KeyError:
+        return []
 
 def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence as an argument
                                             # and returns sentence suitable for uploading to DB
@@ -43,7 +67,6 @@ def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence
     new_sentence = "$$" + new_sentence + "*" + str(checksum(new_sentence)) + '\n'
     return(new_sentence)
 
-
 def make_data(sentence, callsign): # Creates data in format suitable for upload to DB
     sentence = b64encode(sentence) 
     data = {
@@ -59,7 +82,6 @@ def make_data(sentence, callsign): # Creates data in format suitable for upload 
             },
     }
     return data
-
 
 def checksum(sentence): # Returns crc16-citt checksum of ASCII string
     crc = crc16.crc16xmodem(sentence, 0xffff)
@@ -88,11 +110,81 @@ def sigfox_decode(sigfoxmsg):
     
     return({"latitude":lat,"longitude":lon, "elevation":h, "MCU_temp":tmcu, "bat_voltage":vaccu})
 
+
+class GetHandler(BaseHTTPRequestHandler):
+
+    def do_GET(self):
+        parsed_path = urlparse.urlparse(self.path)
+
+        telemetry_data = sigfox_decode(get_query_field(self.path,field='data')[0])
+
+        time = get_date(False)
+        latitude = telemetry_data["latitude"]
+        longtitude = telemetry_data["longitude"]
+        altitude = telemetry_data["elevation"] 
+
+
+        web_message = '\n'.join([
+            'CLIENT VALUES:',
+            'client_address=%s (%s)' % (self.client_address,
+                self.address_string()),
+            'command=%s' % self.command,
+            'query_value=%s' % get_query_field(self.path,field='data'),
+            'request_version=%s' % self.request_version,
+            'time=%s' % time,
+            'latitude=%s' % latitude,
+            'longitude=%s' % longtitude,
+            'altitude=%s' % altitude,
+            '',
+            'SERVER VALUES:',
+            'server_version=%s' % self.server_version,
+            'sys_version=%s' % self.sys_version,
+            'protocol_version=%s' % self.protocol_version,
+            '',
+            ])
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(web_message)
+
+        print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
+        
+        """for x in range(0,4):
+            try:
+                c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
+                c.request(
+                    "PUT",
+                    "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence)).hexdigest(),
+                    json.dumps(make_data(sentence, callsign)),  # BODY
+                    {"Content-Type": "application/json"}  # HEADERS
+                    )
+
+                response = c.getresponse() # Prints response from DB
+
+                print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
+                printer.write('{:05}'.format(index) + "," + gps_output + "," + str(response.reason) + "\n")
+                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + str(response.reason) + "\n")
+                index_raw += 1
+                index += 1
+                break
+
+            except Exception:
+                if x < 3:
+                    print "No internet connection. Repeating upload... [" + str(x + 1) +"/3]" # In case of no internet connection repeats upload three times
+                else:
+                    print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
+                    printer.write('{:05}'.format(index) + "," + gps_output + "," + "Upload_error" + "\n")
+                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Upload_error" + "\n")
+                    index_raw += 1
+                    index += 1
+
+        """
+        return
+
 if len(sys.argv) < 2: # Terminate program, if run without defining port as an argument
-    print "Usage: python %s [recv port]" % sys.argv[0]
+    print "Usage: python %s [callsign]" % sys.argv[0]
     sys.exit()
 
-
+callsign = sys.argv[1]
 date = get_date(False)
 
 printer = open(date + "_parsed_balloon_output_log", 'w') # Creates logfile of sucesfully parsed sentences with current date and time in its name
@@ -102,88 +194,7 @@ printer_raw = open(date + "_raw_balloon_output_log.txt", 'w') # Creates logfile 
 printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
 printer_raw.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
 
-print("\nSerial port " + sys.argv[1] + " opened. Waiting for GPS-NMEA data...\n") # Prints openning message
 
-try:
-    while True: # Infinite loop waiting for data from configured serial port
-        try:
-            gps_output = ser.readline().rstrip('\n\r')
-            
-            if gps_output[0] == "\r":
-                gps_output = gps_output[1:]
-
-            print("Received: " + gps_output)
-
-            if gps_output[:6] == "$CANDY":
-                candy_data = gps_output.split(",")
-                noise = candy_data[2]
-                flux = candy_data[3]
-                printer_raw.write(('{:05}'.format(index_raw) + "," + gps_output + "," + "Candy_detector_data" + "\n"))
-                printer_candy.write('{:05}'.format(index_candy) + "," + time + "," + latitude + "," + longtitude + "," + altitude + "," + gps_output + "\n")
-                print "Candy detector data logged\n"
-                index_candy += 1
-                index_raw += 1
-           
-            else:
-                sentence = make_sentence(gps_output, True)
-                
-                if sentence == "parse_error": # If sentence couldn't be parsed, it is not uploaded and is logged only to raw logfile
-                    print "Can't parse data - sentence not sent\n"
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Parse_error" + "\n")
-                    index_raw += 1
-                elif sentence == "checksum_error": # Sentence is not uploaded, if it didn't pass the checksum, but is still logged
-                    print "Checksum error - sentence not sent\n"
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Checksum_error" + "\n")
-                    index_raw += 1
-                elif sentence == "gps_no_fix": # If NMEA data was uncomplete (without GPS fix), sentence it is not uploaded and is logged only to raw logfile
-                    print "Uncomplete NMEA data (no GPS fix) - sentence not sent\n"
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "No_GPS_fix" + "\n")
-                    index_raw += 1
-                else:
-                    split_sentence = sentence.split(",")
-                    time = split_sentence[1]
-                    latitude = split_sentence[2]
-                    longtitude = split_sentence[3]
-                    altitude = split_sentence[4] 
-
-                    print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
-                    
-                    for x in range(0,4):
-                        try:
-                            c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
-                            c.request(
-                                "PUT",
-                                "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence)).hexdigest(),
-                                json.dumps(make_data(sentence, callsign)),  # BODY
-                                {"Content-Type": "application/json"}  # HEADERS
-                                )
-
-                            response = c.getresponse() # Prints response from DB
-
-                            print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
-                            printer.write('{:05}'.format(index) + "," + gps_output + "," + str(response.reason) + "\n")
-                            printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + str(response.reason) + "\n")
-                            index_raw += 1
-                            index += 1
-                            break
-
-                        except Exception:
-                            if x < 3:
-                                print "No internet connection. Repeating upload... [" + str(x + 1) +"/3]" # In case of no internet connection repeats upload three times
-                            else:
-                                print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
-                                printer.write('{:05}'.format(index) + "," + gps_output + "," + "Upload_error" + "\n")
-                                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Upload_error" + "\n")
-                                index_raw += 1
-                                index += 1
-                
-        except serial.SerialException: # Close safely in case of port disconnection
-            print "Error! Device disconnected. Reconnect device and restart program.\n"
-            break
-
-except KeyboardInterrupt: # Close safely with "CTRL + C"
-    print "_Program closed\n"
-
-printer.close()
-printer_raw.close()
-printer_candy.close()
+server = HTTPServer(('', 8080), GetHandler)
+print 'Starting server at http://localhost:8080'
+server.serve_forever()
