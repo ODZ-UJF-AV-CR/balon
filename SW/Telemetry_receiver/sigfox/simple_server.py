@@ -1,6 +1,37 @@
 from BaseHTTPServer import BaseHTTPRequestHandler
 import urlparse, json
 
+
+""""
+try:  # Python 3+
+    from urllib.parse import (
+        parse_qs, parse_qsl, urlencode, urlparse, urlunparse
+    )
+except ImportError:  # Python 2
+    from urllib import urlencode
+    from urlparse import parse_qs, parse_qsl, urlparse, urlunparse
+"""
+
+def get_query_field(url, field):
+    """
+    Given a URL, return a list of values for the given ``field`` in the
+    URL's query string.
+    
+    >>> get_query_field('http://example.net', field='foo')
+    []
+    
+    >>> get_query_field('http://example.net?foo=bar', field='foo')
+    ['bar']
+    
+    >>> get_query_field('http://example.net?foo=bar&foo=baz', field='foo')
+    ['bar', 'baz']
+    """
+    try:
+        return urlparse.parse_qs(urlparse.urlparse(url).query)[field]
+    except KeyError:
+        return []
+
+
 class GetHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -13,6 +44,7 @@ class GetHandler(BaseHTTPRequestHandler):
             'path=%s' % self.path,
             'real path=%s' % parsed_path.path,
             'query=%s' % parsed_path.query,
+            'query_value=%s' % get_query_field(self.path,field='data'),
             'request_version=%s' % self.request_version,
             '',
             'SERVER VALUES:',
@@ -39,6 +71,6 @@ class GetHandler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     from BaseHTTPServer import HTTPServer
-    server = HTTPServer(('localhost', 8080), GetHandler)
+    server = HTTPServer(('', 8080), GetHandler)
     print 'Starting server at http://localhost:8080'
     server.serve_forever()
