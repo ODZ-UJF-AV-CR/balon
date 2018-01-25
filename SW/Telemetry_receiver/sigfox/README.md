@@ -20,6 +20,10 @@ You should get following as output:
 
     python habitat_sigfox_uploader.py LetFik3
 
+### Testing
+ 
+    curl -G --data "data=23a0fc0a3c1300f606c20993" localhost:8080
+
 ![Decoded Balloon position from sigfox API](sigfox_web_interface.png "Sigfox Web interface decoder")
 
 
