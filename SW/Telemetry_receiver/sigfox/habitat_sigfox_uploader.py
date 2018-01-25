@@ -115,69 +115,83 @@ class GetHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed_path = urlparse.urlparse(self.path)
+        data = get_query_field(self.path,field='data')
 
-        telemetry_data = sigfox_decode(get_query_field(self.path,field='data')[0])
+        if data != []:
+            telemetry_data = sigfox_decode(data[0])
 
-        time = get_date(False)
-        latitude = telemetry_data["latitude"]
-        longtitude = telemetry_data["longitude"]
-        altitude = telemetry_data["elevation"] 
+            time = get_date(False)
+            latitude = telemetry_data["latitude"]
+            longitude = telemetry_data["longitude"]
+            altitude = telemetry_data["elevation"] 
+
+            temperature = telemetry_data["MCU_temp"] 
+            voltage = telemetry_data["bat_voltage"] 
 
 
-        web_message = '\n'.join([
-            'CLIENT VALUES:',
-            'client_address=%s (%s)' % (self.client_address,
-                self.address_string()),
-            'command=%s' % self.command,
-            'query_value=%s' % get_query_field(self.path,field='data'),
-            'request_version=%s' % self.request_version,
-            'time=%s' % time,
-            'latitude=%s' % latitude,
-            'longitude=%s' % longtitude,
-            'altitude=%s' % altitude,
-            '',
-            'SERVER VALUES:',
-            'server_version=%s' % self.server_version,
-            'sys_version=%s' % self.sys_version,
-            'protocol_version=%s' % self.protocol_version,
-            '',
-            ])
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(web_message)
+            web_message = '\n'.join([
+                'CLIENT VALUES:',
+                'client_address=%s (%s)' % (self.client_address,
+                    self.address_string()),
+                'command=%s' % self.command,
+                'query_value=%s' % get_query_field(self.path,field='data'),
+                'request_version=%s' % self.request_version,
+                'time=%s' % time,
+                'latitude=%s' % latitude,
+                'longitude=%s' % longitude,
+                'altitude=%s' % altitude,
+                'MCU_temp=%s' % temperature,
+                'battery_voltage=%s' % voltage,
+                '',
+                'SERVER VALUES:',
+                'server_version=%s' % self.server_version,
+                'sys_version=%s' % self.sys_version,
+                'protocol_version=%s' % self.protocol_version,
+                '',
+                ])
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(web_message)
 
-        print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
-        
-        """for x in range(0,4):
-            try:
-                c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
-                c.request(
-                    "PUT",
-                    "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence)).hexdigest(),
-                    json.dumps(make_data(sentence, callsign)),  # BODY
-                    {"Content-Type": "application/json"}  # HEADERS
-                    )
+            # Creates new sentence in format configured on Habitat's webpage
+            sentence = callsign + ",%s,%s,%s,%s,%s,%s" % (time, latitude, longitude, altitude, temperature, voltage)
+            sentence = "$$" + sentence + "*" + str(checksum(sentence)) + '\n'
 
-                response = c.getresponse() # Prints response from DB
 
-                print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
-                printer.write('{:05}'.format(index) + "," + gps_output + "," + str(response.reason) + "\n")
-                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + str(response.reason) + "\n")
-                index_raw += 1
-                index += 1
-                break
+            print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
+            
+            c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
+            c.request(
+                "PUT",
+                "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence)).hexdigest(),
+                json.dumps(make_data(sentence, callsign)),  # BODY
+                {"Content-Type": "application/json"}  # HEADERS
+                )
 
-            except Exception:
-                if x < 3:
-                    print "No internet connection. Repeating upload... [" + str(x + 1) +"/3]" # In case of no internet connection repeats upload three times
-                else:
-                    print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
-                    printer.write('{:05}'.format(index) + "," + gps_output + "," + "Upload_error" + "\n")
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Upload_error" + "\n")
-                    index_raw += 1
-                    index += 1
+            response = c.getresponse() # Prints response from DB
 
-        """
+            print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
+
+        else:
+
+            web_message = '\n'.join([
+                'CLIENT VALUES:',
+                'client_address=%s (%s)' % (self.client_address,
+                    self.address_string()),
+                'command=%s' % self.command,
+                'query_value=%s' % get_query_field(self.path,field='data'),
+                'request_version=%s' % self.request_version,
+                '',
+                'SERVER VALUES:',
+                'server_version=%s' % self.server_version,
+                'sys_version=%s' % self.sys_version,
+                'protocol_version=%s' % self.protocol_version,
+                '',
+                ])
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(web_message)
+
         return
 
 if len(sys.argv) < 2: # Terminate program, if run without defining port as an argument
@@ -187,13 +201,14 @@ if len(sys.argv) < 2: # Terminate program, if run without defining port as an ar
 callsign = sys.argv[1]
 date = get_date(False)
 
+"""
 printer = open(date + "_parsed_balloon_output_log", 'w') # Creates logfile of sucesfully parsed sentences with current date and time in its name
 printer_raw = open(date + "_raw_balloon_output_log.txt", 'w') # Creates logfile of all received data
 
  # Writes HEADER to the logffile
 printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
 printer_raw.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
-
+"""
 
 server = HTTPServer(('', 8080), GetHandler)
 print 'Starting server at http://localhost:8080'
