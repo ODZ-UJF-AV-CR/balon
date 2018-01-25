@@ -120,7 +120,7 @@ class GetHandler(BaseHTTPRequestHandler):
         if data != []:
             telemetry_data = sigfox_decode(data[0])
 
-            time = get_date(False)
+            time = datetime.utcnow().strftime("%H:%M:%S")
             latitude = telemetry_data["latitude"]
             longitude = telemetry_data["longitude"]
             altitude = telemetry_data["elevation"] 
