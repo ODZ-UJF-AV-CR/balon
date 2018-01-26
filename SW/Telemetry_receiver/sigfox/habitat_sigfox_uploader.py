@@ -169,8 +169,11 @@ class GetHandler(BaseHTTPRequestHandler):
                 )
 
             response = c.getresponse() # Prints response from DB
+            printer.write(str(datetime.utcnow()) + "," + str(latitude) + "," + str(longitude)+ "," + str(altitude)+ "," + str(temperature)+ "," + str(voltage) + "," + str(response.reason) + "\n")
+            printer_raw.write(str(datetime.utcnow()) + "," + str(data[0]) + "," + str(response.reason) + "\n")
 
             print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
+
 
         else:
 
@@ -201,15 +204,17 @@ if len(sys.argv) < 2: # Terminate program, if run without defining port as an ar
 callsign = sys.argv[1]
 date = get_date(False)
 
-"""
+
 printer = open(date + "_parsed_balloon_output_log", 'w') # Creates logfile of sucesfully parsed sentences with current date and time in its name
 printer_raw = open(date + "_raw_balloon_output_log.txt", 'w') # Creates logfile of all received data
 
  # Writes HEADER to the logffile
-printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
-printer_raw.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
-"""
+printer.write("Time, Lat, Lon, Altitude, MCU_temp, Battery, Upload_status\n")
+printer_raw.write("Time, Sigfox_message, Upload_status\n")
 
 server = HTTPServer(('', 8080), GetHandler)
 print 'Starting server at http://localhost:8080'
 server.serve_forever()
+
+printer.close()
+printer_raw.close()
