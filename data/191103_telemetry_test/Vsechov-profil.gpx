@@ -1,0 +1,1521 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<gpx version="1.1" creator="Locus Map, Android"
+ xmlns="http://www.topografix.com/GPX/1/1"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"
+ xmlns:gpx_style="http://www.topografix.com/GPX/gpx_style/0/2"
+ xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3"
+ xmlns:gpxtrkx="http://www.garmin.com/xmlschemas/TrackStatsExtension/v1"
+ xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v2"
+ xmlns:locus="http://www.locusmap.eu">
+	<metadata>
+		<desc>File with points/tracks from Locus Map/3.40.2</desc>
+	</metadata>
+<wpt lat="49.443447" lon="14.613060">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:57:14.158Z</time>
+	<name>Bod 1</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">11,4 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">131 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">4 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:57:14</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>3.90</pdop>
+</wpt>
+<wpt lat="49.443198" lon="14.613445">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:57:24.451Z</time>
+	<name>Bod 2</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,6 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:57:25</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.00</pdop>
+</wpt>
+<wpt lat="49.442612" lon="14.614462">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:57:52.276Z</time>
+	<name>Bod 3</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">11,3 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">133 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">4 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:57:52</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.22</pdop>
+</wpt>
+<wpt lat="49.442293" lon="14.614978">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:58:07.033Z</time>
+	<name>Bod 4</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,1 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:58:07</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.93</pdop>
+</wpt>
+<wpt lat="49.442007" lon="14.615424">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:58:18.485Z</time>
+	<name>Bod 5</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">14,2 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">4 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:58:19</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.29</pdop>
+</wpt>
+<wpt lat="49.441678" lon="14.616004">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:58:32.398Z</time>
+	<name>Bod 6</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">12,0 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">129 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:58:33</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.36</pdop>
+</wpt>
+<wpt lat="49.441597" lon="14.616138">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:58:36.729Z</time>
+	<name>Bod 7</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">10,2 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">128 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:58:37</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.00</pdop>
+</wpt>
+<wpt lat="49.441391" lon="14.616505">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:58:47.930Z</time>
+	<name>Bod 8</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,3 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">134 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">11 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:58:48</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>11.05</pdop>
+</wpt>
+<wpt lat="49.441074" lon="14.617035">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:59:03.850Z</time>
+	<name>Bod 9</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">11,1 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:59:04</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.50</pdop>
+</wpt>
+<wpt lat="49.440753" lon="14.617552">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:59:18.803Z</time>
+	<name>Bod 10</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,8 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:59:19</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.36</pdop>
+</wpt>
+<wpt lat="49.440475" lon="14.618010">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:59:30.607Z</time>
+	<name>Bod 11</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,7 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">131 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">7 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:59:31</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>6.97</pdop>
+</wpt>
+<wpt lat="49.440142" lon="14.618577">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:59:46.329Z</time>
+	<name>Bod 12</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">10,6 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">8 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:59:46</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>7.67</pdop>
+</wpt>
+<wpt lat="49.439869" lon="14.619036">
+	<ele>496.00</ele>
+	<time>2019-11-03T16:59:57.817Z</time>
+	<name>Bod 13</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">496 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">10,7 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">130 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">6 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:59:58</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>6.43</pdop>
+</wpt>
+<wpt lat="49.439609" lon="14.619532">
+	<ele>496.00</ele>
+	<time>2019-11-03T17:00:11.281Z</time>
+	<name>Bod 14</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">496 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,2 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">6 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:00:11</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.82</pdop>
+</wpt>
+<wpt lat="49.439291" lon="14.620055">
+	<ele>496.00</ele>
+	<time>2019-11-03T17:00:25.345Z</time>
+	<name>Bod 15</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">496 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,1 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:00:25</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.14</pdop>
+</wpt>
+<wpt lat="49.439050" lon="14.620512">
+	<ele>495.00</ele>
+	<time>2019-11-03T17:00:34.984Z</time>
+	<name>Bod 16</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">495 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">19,1 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">133 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">8 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:00:35</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>8.46</pdop>
+</wpt>
+<wpt lat="49.438727" lon="14.621069">
+	<ele>495.00</ele>
+	<time>2019-11-03T17:00:45.191Z</time>
+	<name>Bod 17</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">495 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">19,4 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">133 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">8 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:00:45</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>7.68</pdop>
+</wpt>
+<wpt lat="49.438417" lon="14.621550">
+	<ele>495.00</ele>
+	<time>2019-11-03T17:00:53.910Z</time>
+	<name>Bod 18</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">495 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">17,3 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">7 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:00:54</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>7.07</pdop>
+</wpt>
+<wpt lat="49.438057" lon="14.622150">
+	<ele>494.00</ele>
+	<time>2019-11-03T17:01:04.437Z</time>
+	<name>Bod 19</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">494 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">16,2 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">133 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">7 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:01:05</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>7.15</pdop>
+</wpt>
+<wpt lat="49.437896" lon="14.622436">
+	<ele>494.00</ele>
+	<time>2019-11-03T17:01:09.736Z</time>
+	<name>Bod 20</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">494 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">20,2 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">130 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">6 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:01:10</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>6.00</pdop>
+</wpt>
+<wpt lat="49.437225" lon="14.623576">
+	<ele>494.00</ele>
+	<time>2019-11-03T17:01:28.731Z</time>
+	<name>Bod 21</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">494 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">18,4 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">131 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:01:29</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.64</pdop>
+</wpt>
+<wpt lat="49.436577" lon="14.624660">
+	<ele>493.00</ele>
+	<time>2019-11-03T17:01:48.598Z</time>
+	<name>Bod 22</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">493 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">21,0 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">132 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">4 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:01:49</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>3.90</pdop>
+</wpt>
+<wpt lat="49.435036" lon="14.627255">
+	<ele>493.00</ele>
+	<time>2019-11-03T17:02:36.161Z</time>
+	<name>Bod 23</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">493 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">10,0 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">136 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">4 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:02:36</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.03</pdop>
+</wpt>
+<wpt lat="49.433443" lon="14.629899">
+	<ele>493.00</ele>
+	<time>2019-11-03T17:03:30.339Z</time>
+	<name>Bod 24</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">493 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">15,2 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">137 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">5 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:03:30</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>4.96</pdop>
+</wpt>
+<wpt lat="49.432894" lon="14.630703">
+	<ele>491.00</ele>
+	<time>2019-11-03T17:03:46.729Z</time>
+	<name>Bod 25</name>
+	<desc><![CDATA[<!-- desc_gen:start -->
+<font color="#ff000000"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Nad. výška</b></small></td><td align="center" valign="center">491 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rychlost</b></small></td><td align="center" valign="center">13,6 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Azimut</b></small></td><td align="center" valign="center">133 °</td></tr>
+<tr><td align="left" valign="center"><small><b>Přesnost</b></small></td><td align="center" valign="center">6 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 18:03:47</td></tr>
+</table></td></tr><tr><td><table width="100%"></table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<sym>Waypoint</sym>
+	<pdop>5.79</pdop>
+</wpt>
+<trk>
+<name>2019-11-03 17:56:21</name>
+<desc><![CDATA[<!-- desc_gen:start -->
+<font color="black"><table width="100%"><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Činnost</b></small></td><td align="center" valign="center">Běh</td></tr>
+<tr><td align="left" valign="center"><small><b>Vzdálenost</b></small></td><td align="center" valign="center">2,0 km</td></tr>
+<tr><td align="left" valign="center"><small><b>Vytvořeno</b></small></td><td align="center" valign="center">2019-11-03 17:56:21</td></tr>
+<tr><td align="left" valign="center"><small><b>Max. rychlost</b></small></td><td align="center" valign="center">23,0 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Tempo</b></small></td><td align="center" valign="center">04:21 min/km</td></tr>
+<tr><td align="left" valign="center"><small><b>Energie</b></small></td><td align="center" valign="center">290 KJ</td></tr>
+<tr><td align="left" valign="center"><small><b>Body</b></small></td><td align="center" valign="center">110</td></tr>
+</table></td></tr><tr><td colspan="1"><hr></td></tr><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b></b></small></td><td align="center" valign="center">Vše</td><td align="center" valign="center">Rychlost > 0</td></tr>
+<tr><td align="left" valign="center"><small><b>Prům. rychlost</b></small></td><td align="center" valign="center">13,8 km/h</td><td align="center" valign="center">15,1 km/h</td></tr>
+<tr><td align="left" valign="center"><small><b>Čas trasy</b></small></td><td align="center" valign="center">0 h:08 min:46 sec</td><td align="center" valign="center">0 h:07 min:56 sec</td></tr>
+</table></td></tr><tr><td colspan="1"><hr></td></tr><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b>Min. výška</b></small></td><td align="center" valign="center">489 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Max. výška</b></small></td><td align="center" valign="center">497 m</td></tr>
+</table></td></tr><tr><td colspan="1"><hr></td></tr><tr><td><table width="100%"><tr><td align="left" valign="center"><small><b></b></small></td><td align="center" valign="center">Převýšení</td><td align="center" valign="center">Vzdálenost</td></tr>
+<tr><td align="left" valign="center"><small><b>Stoupání</b></small></td><td align="center" valign="center">2 m</td><td align="center" valign="center">0 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Klesání</b></small></td><td align="center" valign="center">-9 m</td><td align="center" valign="center">36 m</td></tr>
+<tr><td align="left" valign="center"><small><b>Rovina</b></small></td><td align="center" valign="center">0 m</td><td align="center" valign="center">1976 m</td></tr>
+</table></td></tr></table></font>
+<!-- desc_gen:end -->]]></desc>
+	<extensions>
+		<gpx_style:line>
+			<gpx_style:color>FF0000</gpx_style:color>
+			<gpx_style:opacity>0.78</gpx_style:opacity>
+			<gpx_style:width>3.0</gpx_style:width>
+		</gpx_style:line>
+		<locus:activity>running</locus:activity>
+	</extensions>
+<trkseg>
+<trkpt lat="49.444253" lon="14.611694">
+	<ele>495.83</ele>
+	<time>2019-11-03T16:56:22.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>253.71504</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.444246" lon="14.611714">
+	<ele>495.84</ele>
+	<time>2019-11-03T16:56:35.000Z</time>
+	<pdop>9.22</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>124.52236</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.444129" lon="14.611916">
+	<ele>495.82</ele>
+	<time>2019-11-03T16:56:40.000Z</time>
+	<pdop>8.76</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99927</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.444023" lon="14.612079">
+	<ele>496.03</ele>
+	<time>2019-11-03T16:56:45.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.00404</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443925" lon="14.612232">
+	<ele>496.14</ele>
+	<time>2019-11-03T16:56:50.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99988</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443840" lon="14.612382">
+	<ele>496.44</ele>
+	<time>2019-11-03T16:56:55.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99817</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443733" lon="14.612566">
+	<ele>496.84</ele>
+	<time>2019-11-03T16:57:00.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99988</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443624" lon="14.612747">
+	<ele>496.77</ele>
+	<time>2019-11-03T16:57:05.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99991</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443524" lon="14.612926">
+	<ele>496.76</ele>
+	<time>2019-11-03T16:57:10.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>127.080956</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443425" lon="14.613090">
+	<ele>496.65</ele>
+	<time>2019-11-03T16:57:15.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.98439</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443447" lon="14.613060">
+	<ele>496.67</ele>
+	<time>2019-11-03T16:57:14.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.00037</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443325" lon="14.613234">
+	<ele>496.77</ele>
+	<time>2019-11-03T16:57:19.000Z</time>
+	<pdop>4.13</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.13599</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443218" lon="14.613411">
+	<ele>496.94</ele>
+	<time>2019-11-03T16:57:24.000Z</time>
+	<pdop>4.82</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.095</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443198" lon="14.613445">
+	<ele>496.95</ele>
+	<time>2019-11-03T16:57:25.000Z</time>
+	<pdop>5.00</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.98143</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.443088" lon="14.613634">
+	<ele>496.81</ele>
+	<time>2019-11-03T16:57:30.000Z</time>
+	<pdop>5.18</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.97588</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442982" lon="14.613832">
+	<ele>496.88</ele>
+	<time>2019-11-03T16:57:35.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.00008</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442863" lon="14.614040">
+	<ele>496.81</ele>
+	<time>2019-11-03T16:57:40.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.99841</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442755" lon="14.614228">
+	<ele>496.98</ele>
+	<time>2019-11-03T16:57:45.000Z</time>
+	<pdop>4.05</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.0076</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442651" lon="14.614405">
+	<ele>497.00</ele>
+	<time>2019-11-03T16:57:50.000Z</time>
+	<pdop>4.09</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99014</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442612" lon="14.614462">
+	<ele>496.97</ele>
+	<time>2019-11-03T16:57:52.000Z</time>
+	<pdop>4.22</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.9379</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442514" lon="14.614610">
+	<ele>496.87</ele>
+	<time>2019-11-03T16:57:57.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99086</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442401" lon="14.614807">
+	<ele>497.07</ele>
+	<time>2019-11-03T16:58:02.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.9884</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442293" lon="14.614978">
+	<ele>497.01</ele>
+	<time>2019-11-03T16:58:07.000Z</time>
+	<pdop>4.93</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.98883</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442178" lon="14.615149">
+	<ele>496.85</ele>
+	<time>2019-11-03T16:58:12.000Z</time>
+	<pdop>4.64</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.00113</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442058" lon="14.615343">
+	<ele>496.79</ele>
+	<time>2019-11-03T16:58:17.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.00706</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.442007" lon="14.615424">
+	<ele>496.79</ele>
+	<time>2019-11-03T16:58:19.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.09763</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441890" lon="14.615626">
+	<ele>497.09</ele>
+	<time>2019-11-03T16:58:24.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99977</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441772" lon="14.615836">
+	<ele>497.32</ele>
+	<time>2019-11-03T16:58:29.000Z</time>
+	<pdop>5.14</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.0257</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441678" lon="14.616004">
+	<ele>497.30</ele>
+	<time>2019-11-03T16:58:33.000Z</time>
+	<pdop>5.36</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.05856</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441597" lon="14.616138">
+	<ele>497.09</ele>
+	<time>2019-11-03T16:58:37.000Z</time>
+	<pdop>5.00</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>128.0298</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441524" lon="14.616278">
+	<ele>497.35</ele>
+	<time>2019-11-03T16:58:42.000Z</time>
+	<pdop>9.31</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.63113</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441414" lon="14.616465">
+	<ele>497.39</ele>
+	<time>2019-11-03T16:58:47.000Z</time>
+	<pdop>11.05</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.43095</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441391" lon="14.616505">
+	<ele>497.41</ele>
+	<time>2019-11-03T16:58:48.000Z</time>
+	<pdop>11.05</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.53375</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441306" lon="14.616639">
+	<ele>497.43</ele>
+	<time>2019-11-03T16:58:53.000Z</time>
+	<pdop>10.91</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.91307</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441192" lon="14.616832">
+	<ele>497.35</ele>
+	<time>2019-11-03T16:58:58.000Z</time>
+	<pdop>10.82</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.842</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441090" lon="14.617008">
+	<ele>497.38</ele>
+	<time>2019-11-03T16:59:03.000Z</time>
+	<pdop>6.48</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.00742</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.441074" lon="14.617035">
+	<ele>497.40</ele>
+	<time>2019-11-03T16:59:04.000Z</time>
+	<pdop>4.50</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.0007</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440987" lon="14.617178">
+	<ele>497.36</ele>
+	<time>2019-11-03T16:59:09.000Z</time>
+	<pdop>4.03</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.00055</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440868" lon="14.617367">
+	<ele>497.52</ele>
+	<time>2019-11-03T16:59:14.000Z</time>
+	<pdop>4.50</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.99988</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440753" lon="14.617552">
+	<ele>497.38</ele>
+	<time>2019-11-03T16:59:19.000Z</time>
+	<pdop>5.36</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99556</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440653" lon="14.617711">
+	<ele>497.08</ele>
+	<time>2019-11-03T16:59:24.000Z</time>
+	<pdop>13.58</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.78592</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440523" lon="14.617918">
+	<ele>497.10</ele>
+	<time>2019-11-03T16:59:29.000Z</time>
+	<pdop>10.05</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.99715</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440475" lon="14.618010">
+	<ele>496.98</ele>
+	<time>2019-11-03T16:59:31.000Z</time>
+	<pdop>6.97</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.99911</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440381" lon="14.618186">
+	<ele>496.79</ele>
+	<time>2019-11-03T16:59:36.000Z</time>
+	<pdop>10.82</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.42831</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440246" lon="14.618412">
+	<ele>496.68</ele>
+	<time>2019-11-03T16:59:41.000Z</time>
+	<pdop>11.96</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.00224</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440142" lon="14.618577">
+	<ele>496.53</ele>
+	<time>2019-11-03T16:59:46.000Z</time>
+	<pdop>7.67</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.0409</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.440046" lon="14.618734">
+	<ele>496.04</ele>
+	<time>2019-11-03T16:59:51.000Z</time>
+	<pdop>14.69</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>143.00766</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439907" lon="14.618961">
+	<ele>496.23</ele>
+	<time>2019-11-03T16:59:56.000Z</time>
+	<pdop>10.79</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.9029</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439869" lon="14.619036">
+	<ele>496.34</ele>
+	<time>2019-11-03T16:59:58.000Z</time>
+	<pdop>6.43</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.99855</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439786" lon="14.619191">
+	<ele>495.82</ele>
+	<time>2019-11-03T17:00:03.000Z</time>
+	<pdop>10.96</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.89009</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439672" lon="14.619417">
+	<ele>495.93</ele>
+	<time>2019-11-03T17:00:08.000Z</time>
+	<pdop>10.54</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.98111</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439609" lon="14.619532">
+	<ele>495.90</ele>
+	<time>2019-11-03T17:00:11.000Z</time>
+	<pdop>5.82</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99835</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439510" lon="14.619686">
+	<ele>495.63</ele>
+	<time>2019-11-03T17:00:16.000Z</time>
+	<pdop>7.55</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.65408</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439381" lon="14.619902">
+	<ele>495.84</ele>
+	<time>2019-11-03T17:00:21.000Z</time>
+	<pdop>9.54</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.95802</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439272" lon="14.620088">
+	<ele>495.55</ele>
+	<time>2019-11-03T17:00:26.000Z</time>
+	<pdop>5.51</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.9946</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439291" lon="14.620055">
+	<ele>495.58</ele>
+	<time>2019-11-03T17:00:25.000Z</time>
+	<pdop>5.14</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.77669</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439204" lon="14.620214">
+	<ele>495.00</ele>
+	<time>2019-11-03T17:00:30.000Z</time>
+	<pdop>12.71</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>134.25938</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.439050" lon="14.620512">
+	<ele>495.22</ele>
+	<time>2019-11-03T17:00:35.000Z</time>
+	<pdop>8.46</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.95769</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438872" lon="14.620812">
+	<ele>494.88</ele>
+	<time>2019-11-03T17:00:40.000Z</time>
+	<pdop>7.68</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.90698</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438727" lon="14.621069">
+	<ele>494.83</ele>
+	<time>2019-11-03T17:00:45.000Z</time>
+	<pdop>7.68</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.91597</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438551" lon="14.621331">
+	<ele>494.76</ele>
+	<time>2019-11-03T17:00:50.000Z</time>
+	<pdop>6.65</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.04358</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438392" lon="14.621595">
+	<ele>494.59</ele>
+	<time>2019-11-03T17:00:55.000Z</time>
+	<pdop>6.97</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.13496</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438417" lon="14.621550">
+	<ele>494.53</ele>
+	<time>2019-11-03T17:00:54.000Z</time>
+	<pdop>7.07</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.921</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438253" lon="14.621790">
+	<ele>494.43</ele>
+	<time>2019-11-03T17:00:59.000Z</time>
+	<pdop>6.00</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.43465</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438082" lon="14.622098">
+	<ele>494.42</ele>
+	<time>2019-11-03T17:01:04.000Z</time>
+	<pdop>7.15</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.90836</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.438057" lon="14.622150">
+	<ele>494.39</ele>
+	<time>2019-11-03T17:01:05.000Z</time>
+	<pdop>7.15</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.9684</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.437896" lon="14.622436">
+	<ele>494.07</ele>
+	<time>2019-11-03T17:01:10.000Z</time>
+	<pdop>6.00</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.028</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.437722" lon="14.622692">
+	<ele>494.27</ele>
+	<time>2019-11-03T17:01:15.000Z</time>
+	<pdop>5.36</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.99438</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.437539" lon="14.623026">
+	<ele>494.11</ele>
+	<time>2019-11-03T17:01:20.000Z</time>
+	<pdop>4.50</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99956</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.437368" lon="14.623329">
+	<ele>493.90</ele>
+	<time>2019-11-03T17:01:25.000Z</time>
+	<pdop>4.47</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.02586</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.437225" lon="14.623576">
+	<ele>493.78</ele>
+	<time>2019-11-03T17:01:29.000Z</time>
+	<pdop>4.64</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.00197</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.437068" lon="14.623846">
+	<ele>493.26</ele>
+	<time>2019-11-03T17:01:34.000Z</time>
+	<pdop>4.50</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99957</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.436924" lon="14.624097">
+	<ele>493.20</ele>
+	<time>2019-11-03T17:01:39.000Z</time>
+	<pdop>4.29</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.0159</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.436758" lon="14.624369">
+	<ele>493.11</ele>
+	<time>2019-11-03T17:01:44.000Z</time>
+	<pdop>4.05</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.9954</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.436577" lon="14.624660">
+	<ele>492.75</ele>
+	<time>2019-11-03T17:01:49.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.9986</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.436412" lon="14.624938">
+	<ele>492.77</ele>
+	<time>2019-11-03T17:01:54.000Z</time>
+	<pdop>3.98</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.09485</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.436245" lon="14.625226">
+	<ele>492.79</ele>
+	<time>2019-11-03T17:01:59.000Z</time>
+	<pdop>4.22</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.001</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.436067" lon="14.625517">
+	<ele>493.04</ele>
+	<time>2019-11-03T17:02:04.000Z</time>
+	<pdop>4.09</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.9878</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435898" lon="14.625792">
+	<ele>492.79</ele>
+	<time>2019-11-03T17:02:09.000Z</time>
+	<pdop>3.98</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99992</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435720" lon="14.626088">
+	<ele>492.81</ele>
+	<time>2019-11-03T17:02:14.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.00111</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435557" lon="14.626334">
+	<ele>492.72</ele>
+	<time>2019-11-03T17:02:19.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.00507</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435384" lon="14.626635">
+	<ele>492.86</ele>
+	<time>2019-11-03T17:02:24.000Z</time>
+	<pdop>3.90</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99683</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435228" lon="14.626922">
+	<ele>492.85</ele>
+	<time>2019-11-03T17:02:29.000Z</time>
+	<pdop>4.03</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.00467</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435078" lon="14.627185">
+	<ele>492.92</ele>
+	<time>2019-11-03T17:02:34.000Z</time>
+	<pdop>3.98</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.25134</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.435036" lon="14.627255">
+	<ele>492.77</ele>
+	<time>2019-11-03T17:02:36.000Z</time>
+	<pdop>4.03</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>135.84164</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434932" lon="14.627445">
+	<ele>492.79</ele>
+	<time>2019-11-03T17:02:41.000Z</time>
+	<pdop>4.22</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.07762</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434761" lon="14.627713">
+	<ele>492.88</ele>
+	<time>2019-11-03T17:02:46.000Z</time>
+	<pdop>4.64</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.9945</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434580" lon="14.627999">
+	<ele>493.21</ele>
+	<time>2019-11-03T17:02:51.000Z</time>
+	<pdop>6.97</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.04962</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434436" lon="14.628217">
+	<ele>493.26</ele>
+	<time>2019-11-03T17:02:56.000Z</time>
+	<pdop>6.86</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.99512</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434277" lon="14.628470">
+	<ele>493.30</ele>
+	<time>2019-11-03T17:03:01.000Z</time>
+	<pdop>5.18</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.00085</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434131" lon="14.628726">
+	<ele>493.32</ele>
+	<time>2019-11-03T17:03:06.000Z</time>
+	<pdop>6.43</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.9982</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.434014" lon="14.628979">
+	<ele>493.34</ele>
+	<time>2019-11-03T17:03:11.000Z</time>
+	<pdop>6.61</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.00018</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433882" lon="14.629236">
+	<ele>493.35</ele>
+	<time>2019-11-03T17:03:16.000Z</time>
+	<pdop>6.25</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>129.00597</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433723" lon="14.629506">
+	<ele>493.06</ele>
+	<time>2019-11-03T17:03:21.000Z</time>
+	<pdop>6.22</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.9981</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433574" lon="14.629732">
+	<ele>492.79</ele>
+	<time>2019-11-03T17:03:26.000Z</time>
+	<pdop>5.72</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>136.9957</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433414" lon="14.629939">
+	<ele>492.47</ele>
+	<time>2019-11-03T17:03:31.000Z</time>
+	<pdop>4.88</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>135.12312</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433443" lon="14.629899">
+	<ele>492.54</ele>
+	<time>2019-11-03T17:03:30.000Z</time>
+	<pdop>4.96</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>136.9997</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433281" lon="14.630142">
+	<ele>491.94</ele>
+	<time>2019-11-03T17:03:35.000Z</time>
+	<pdop>4.21</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>135.08986</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.433106" lon="14.630390">
+	<ele>491.49</ele>
+	<time>2019-11-03T17:03:40.000Z</time>
+	<pdop>4.42</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.20433</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432945" lon="14.630628">
+	<ele>490.90</ele>
+	<time>2019-11-03T17:03:45.000Z</time>
+	<pdop>5.54</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>136.9386</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432894" lon="14.630703">
+	<ele>490.85</ele>
+	<time>2019-11-03T17:03:47.000Z</time>
+	<pdop>5.79</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>132.99522</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432784" lon="14.630873">
+	<ele>490.16</ele>
+	<time>2019-11-03T17:03:52.000Z</time>
+	<pdop>6.43</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>130.03528</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432612" lon="14.631174">
+	<ele>490.31</ele>
+	<time>2019-11-03T17:03:57.000Z</time>
+	<pdop>6.43</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>131.99942</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432432" lon="14.631461">
+	<ele>489.74</ele>
+	<time>2019-11-03T17:04:02.000Z</time>
+	<pdop>6.43</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>133.11209</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432319" lon="14.631660">
+	<ele>489.00</ele>
+	<time>2019-11-03T17:04:07.000Z</time>
+	<pdop>6.86</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>127.41363</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432330" lon="14.631626">
+	<ele>488.76</ele>
+	<time>2019-11-03T17:04:12.000Z</time>
+	<pdop>6.43</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>304.63232</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432340" lon="14.631655">
+	<ele>488.71</ele>
+	<time>2019-11-03T17:04:17.000Z</time>
+	<pdop>5.12</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>53.693527</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432352" lon="14.631636">
+	<ele>488.85</ele>
+	<time>2019-11-03T17:04:54.000Z</time>
+	<pdop>4.07</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>318.8565</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432419" lon="14.631691">
+	<ele>488.97</ele>
+	<time>2019-11-03T17:04:59.000Z</time>
+	<pdop>3.95</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>5.288093</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+<trkpt lat="49.432442" lon="14.631638">
+	<ele>489.03</ele>
+	<time>2019-11-03T17:05:04.000Z</time>
+	<pdop>8.01</pdop>
+	<extensions>
+		<gpxtpx:TrackPointExtension>
+			<gpxtpx:course>290.6029</gpxtpx:course>
+		</gpxtpx:TrackPointExtension>
+	</extensions>
+</trkpt>
+</trkseg>
+</trk>
+</gpx>
