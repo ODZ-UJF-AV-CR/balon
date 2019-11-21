@@ -5,12 +5,6 @@ $fn =  draft ? 50 :100;
 
 module 888_3006(draft){    /////// 1. díl (AZ, YAW)
 
-    //lícovaný šroub  M6
-    8_shank_diameter = 8.4;		//průměr dříku + tolerance pro díru
-    screw_length = 30; // délka lícovaného sroubu
-    whole_screw_length = screw_length + 11+6; 		//celková délka
-    thread_length = 11;				//délka závitu
-    thread_diameter = 6;
     length_screw_behind_nut = 3;
     head_screw_diameter = 13 + 0.2;		//průměr válcové hlavy šroubu
     head_screw_height = 8 + 0.2;		//výška válcové hlavy šroubu
@@ -24,9 +18,10 @@ module 888_3006(draft){    /////// 1. díl (AZ, YAW)
     g3_0_srcew_dist = 55;
     height = ALU_profile_width;
     magnet_d = 80;
-    carbon_pipe_10_outer_diameter = 10.4;
+    antenna_pipe_outer_diameter =  16.2 + global_clearance;
     platform_height = 52;
     nut_size = 28; //šířka křídel matky na střeše
+    cable_diameter=5;
 
 
     difference(){
@@ -57,7 +52,7 @@ module 888_3006(draft){    /////// 1. díl (AZ, YAW)
                     cylinder(h = M8_washer_thickness, d = 19);
                 // Nut hole
                 translate([g3_0_srcew_dist, 0, M8_washer_thickness+layer_thickness])
-                    cylinder(h = M6_nut_height, d = M6_nut_diameter);
+                    cylinder(h = M6_nut_height - layer_thickness, d = M6_nut_diameter);
                 // Bolt hole
                 translate([g3_0_srcew_dist, 0, M8_washer_thickness + M6_nut_height + layer_thickness])
                     cylinder(h = platform_height, d = M6_screw_diameter);
@@ -77,8 +72,13 @@ module 888_3006(draft){    /////// 1. díl (AZ, YAW)
               rotate([-90, 0, 0])
                   cylinder(h = 150, d = M3_nut_diameter, $fn = 6);
         }
-
         cylinder(h = 1000, d = 16 + global_clearance, $fn = draft?10:100);
+
+        rotate([0, 0, -45])
+            translate([0,-cable_diameter/2,0])
+            cube([g3_0_cone1, cable_diameter,cable_diameter]);
+
+
     }
 }
 

@@ -1,6 +1,6 @@
 maximum_printable_size = 150;
 
-layer_thickness = 0.3;
+layer_thickness = 0.2;
 global_clearance = 0.5;
 
 platform_base_diameter = 400; // Průměr ukotvení válců spodní platformy
