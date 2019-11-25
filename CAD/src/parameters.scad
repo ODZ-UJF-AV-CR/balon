@@ -186,3 +186,9 @@ LO_spodni_prumer=17.2;
 LO_vyska_bez_krytu=15;
 S01_tolerance_zavit=1.5;
 R01_vyska_prekryti_statoru=10;
+
+
+//RICOH THETA V
+camera_width = 45.5;
+camera_thickness_center = 18;
+camera_thickness_side = 10;
