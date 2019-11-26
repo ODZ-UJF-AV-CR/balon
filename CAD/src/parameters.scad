@@ -190,5 +190,15 @@ R01_vyska_prekryti_statoru=10;
 
 //RICOH THETA V
 camera_width = 45.5;
-camera_thickness_center = 18;
-camera_thickness_side = 10;
+camera_thickness_center = 18.3;
+camera_thickness_side = 10.5;
+camera_screw_diameter = 6.4;
+camera_usb_translate_x = 3;
+camera_usb_translate_y = 13;
+camera_buttons_diameter = 5;
+camera_buttons_distance = 15;
+camera_first_button_height = 65;
+
+//USB (A -> micro) cable
+usb_width = 10;
+usb_height = 7;
