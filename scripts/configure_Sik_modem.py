@@ -37,7 +37,7 @@ def settings():
 	query(r1, b"ATS2=2") 	# [2, 4, 8, 16, 19, 24, 32, 64, 96, 128, 192, 250]
 	query(r1, b"ATS3=25")
 	query(r1, b"ATS4=20")
-	query(r1, b"ATS5=1")
+	query(r1, b"ATS5=0")
 	query(r1, b"ATS6=1")		 ## 1 - mavlink activated
 	query(r1, b"ATS7=0")
 	query(r1, b"ATS8=434050")
