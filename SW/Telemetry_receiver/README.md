@@ -21,12 +21,19 @@ The logfile looks like following:
 The software needs [Pynmea2](https://github.com/Knio/pynmea2) library which could be installed by following command: 
 
     pip install pymavlnik crc16 serial ttn 
-    
+
+For usage with QGC parallelly, you must install [Mavlink-routered](https://github.com/intel/mavlink-router)
 ### Program launch
 
 The software needs a hardware radio modem.  The modem is accessed trought an serial port "/dev/ttyUSB0" for example. Then the code could be executed by runnig following command: 
 
-    python habitat_uploader.py /dev/ttyUSB0
+    python habitat_uploader.py /dev/ttyUSB0 rover_calsign
+
+### Program launch with QGC (Mavlink UDP)
+    
+    mavlink-routered -c mavlink.conf
+
+    pythton python habitat_uploader.py udpin:0.0.0.0:11000 rover_calsign
 
 ### Callsign setting
 
