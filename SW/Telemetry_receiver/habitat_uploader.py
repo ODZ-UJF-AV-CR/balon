@@ -94,7 +94,7 @@ def start_mavlink_rx(q):
                 payload['alt'] = data['alt']/10e2
                 payload['time'] = data['time_usec']
                 payload['num_sats'] = data['satellites_visible']
-                f.write(payload)
+                f.write(json.dumps(data))
 
             # temperature
             #if data['mavpackettype'] == "":
@@ -130,7 +130,7 @@ def start_lora_rx(qu):
             qu.put(data)
             q.task_done()
 
-            f.write(data)
+            f.write(json.dupms(data))
 
         except Exception as e:
             print("task error", e)
