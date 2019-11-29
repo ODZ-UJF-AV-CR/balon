@@ -1,52 +1,45 @@
 #!/usr/bin/env python
 import sys
+#from http import client
 import httplib
 import json
-import pynmea2
+import datetime
+#import pynmea2
+#import urllib
+#import urllib.request
+from pymavlink import mavutil
+import time
 import crc16
 import serial
 from base64 import b64encode
 from hashlib import sha256
 from datetime import datetime
+import Queue
+from threading import Thread
+import ttn
+import iso8601
 
 
-######################## CALLSIGN SETTINGS ########################
+###################################################################
 
-callsign = "LetFik2"
+callsign = "LetFik5"
+virtual = False;
 
 ###################################################################
 
 
+
 def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence as an argument
                                             # and returns sentence suitable for uploading to DB
-    if sentence[:6] != "$GPGGA":
-        return "parse_error"
-    try:
-        try: 
-            if checksum_bool == False:
-                parsed = pynmea2.parse(sentence[:-4], checksum_bool)
-            else:
-                parsed = pynmea2.parse(sentence)
-        except pynmea2.ChecksumError:
-            return "checksum_error"
-    except pynmea2.nmea.ParseError:
-        return "parse_error"
-    
-    if None in (parsed.timestamp, parsed.lat, parsed.lat_dir, parsed.lon, parsed.lon_dir, parsed.altitude, parsed.num_sats):
-        return "gps_no_fix" 
-
-    if parsed.lat_dir == 'S':
-        parsed.lat = str(float(parsed.lat) * (-1))
-    if parsed.lon_dir == 'W':
-        parsed.lon = str(float(parsed.lon) * (-1))
 
     # Creates new sentence in format configured on Habitat's webpage
-    new_sentence = callsign + ",%s,%s,%s,%s,%s,%s,%s" % (parsed.timestamp, parsed.lat, parsed.lon, parsed.altitude, parsed.num_sats, noise, flux)
+    new_sentence = callsign + ",{},{},{},{},{},{},{}".format(sentence['timestamp'], sentence['lat'], sentence['lon'], sentence['altitude'], sentence['num_sats'], sentence['fix'], sentence['temperature'])
     new_sentence = "$$" + new_sentence + "*" + str(checksum(new_sentence)) + '\n'
     return(new_sentence)
 
 
 def make_data(sentence, callsign): # Creates data in format suitable for upload to DB
+    date = datetime.utcnow().isoformat("T") + "Z"
     sentence = b64encode(sentence) 
     data = {
         "type": "payload_telemetry",
@@ -54,7 +47,7 @@ def make_data(sentence, callsign): # Creates data in format suitable for upload 
             "_raw": sentence
             },
         "receivers": {
-            callsign: {
+            sys.argv[2]: {
                 "time_created": get_date(True),
                 "time_uploaded": get_date(True),
                 },
@@ -64,7 +57,7 @@ def make_data(sentence, callsign): # Creates data in format suitable for upload 
 
 
 def checksum(sentence): # Returns crc16-citt checksum of ASCII string
-    crc = crc16.crc16xmodem(sentence, 0xffff)
+    crc = crc16.crc16xmodem(sentence.encode(), 0xffff)
     return ('{:04X}'.format(crc))
 
 
@@ -74,110 +67,156 @@ def get_date(format_bool):
     else:
         return datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-
-
-if len(sys.argv) < 2: # Terminate program, if run without defining port as an argument
-    print "Usage: python %s [recv port]" % sys.argv[0]
+if len(sys.argv) < 3: # Terminate program, if run without defining port as an argument
+    print "Usage: python %s [recv port | lora] [receiver callsign]" % sys.argv[0]
     sys.exit()
 
-
-ser = serial.Serial(sys.argv[1], rtscts=True, dsrdtr=True)
-serial.timeout = 1
-
-index, index_raw, index_candy, noise, flux = (0, 0, 0, 0, 0)
-time, latitude, longtitude, altitude = (0, 0, 0, 0)
 date = get_date(False)
+q = Queue.Queue(10)
 
-printer = open(date + "_parsed_balloon_output_log", 'w') # Creates logfile of sucesfully parsed sentences with current date and time in its name
-printer_raw = open(date + "_raw_balloon_output_log.txt", 'w') # Creates logfile of all received data
-printer_candy = open(date + "_candy_detector_log", 'w')
- # Writes HEADER to the logffile
-printer.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
-printer_raw.write("Entry_id,GPS_message_type,Time,Lat,Lat_dir,Lon,Lon_dir,GPS_equal,Num_sats,Horizontal_dil,Altitude,Altitude_units,Geo_sep,Geo_sep_units,Age_gps_data,Ref_station_id,Upload_status\n")
-printer_candy.write("Entry_id,Time,Latitude,Longtitude,Altitude,Candy__detector_data,,,,,\n")
+def start_mavlink_rx(q):
+    mav = mavutil.mavlink_connection(sys.argv[1], baud=57600, source_system=255)
 
-print("\nSerial port " + sys.argv[1] + " opened. Waiting for GPS-NMEA data...\n") # Prints openning message
+    payload = {
+            'lat': 0,
+            'lon': 0,
+            'alt': 0,
+            'fix': 0,
+            'time': 0,
+            'source': 'mavlink',
+            'num_sats': -1,
+            'temp': 0
+
+        }
+
+    while True:
+        try:
+            data = mav.recv_match(blocking=True)
+            data = data.to_dict()
+            if data['mavpackettype'] == "GPS_RAW_INT":
+                payload['lat'] = data['lat']/10e6
+                payload['lon'] = data['lon']/10e6
+                payload['alt'] = data['alt']/10e2
+                payload['time'] = data['time_usec']
+                payload['num_sats'] = data['satellites_visible']
+
+            # temperature
+            #if data['mavpackettype'] == "":
+            #    payload['temp'] = data['temperature']
+
+            if data['mavpackettype'] in ['GPS_RAW_INT']:
+                q.put(payload)
+                q.task_done()
+
+        except Exception as e:
+            print("task error:", e)
+
+
+def start_lora_rx(qu):
+    app_id = "throwaway324s-test-network"
+    access_key = "ttn-account-v2.zyaSIrWA1yJ_RdEgp7yDPhvTAH3-qEstQi6MMVrhzwo"
+
+    def uplink_callback(msg, client):
+        try:
+            print "New LoRa message:", msg.metadata.time, msg.counter, msg.payload_fields
+            #qu.put(msg)
+            fields = msg.payload_fields
+            ts = iso8601.parse_date(msg.metadata.time)
+            qu.put({
+                "lat": fields.lat,
+                "lon": fields.lon,
+                "alt": float(fields.alt_m),
+                "time": int((ts.utcnow()-datetime(1970,1,1)).total_seconds()*1000000),
+                "source": "lora"
+            })
+            q.task_done()
+        except Exception as e:
+            print("task error", e)
+
+    handler = ttn.HandlerClient(app_id, access_key)
+
+    # using mqtt client
+    mqtt_client = handler.data()
+    mqtt_client.set_uplink_callback(uplink_callback)
+    mqtt_client.connect()
+
+
+if sys.argv[1] == 'lora':
+    print("Starting LORA")
+    reciever = start_lora_rx
+else:
+    reciever = start_mavlink_rx
+
+worker = Thread(target=reciever, args=(q,))
+worker.setDaemon(True)
+worker.start()
+
+
+
 
 try:
     while True: # Infinite loop waiting for data from configured serial port
         try:
-            gps_output = ser.readline().rstrip('\n\r')
             
-            if gps_output[0] == "\r":
-                gps_output = gps_output[1:]
+            if not virtual:
+                data = q.get(True)
+                param = {
+                    #'timestamp': datetime.fromtimestamp(data['time']).strftime("%H:%M:%S"),
+                    'timestamp': datetime.utcnow().strftime("%H:%M:%S"),
+                    'lat': data['lat'],
+                    'lon': data['lon'],
+                    'altitude': data['alt'],
+                    'num_sats': data.get('num_sats', -1),
+                    'fix': data.get('fix', -1),
+                    'temperature': data.get('temp', -999),
+                }
 
-            print("Received: " + gps_output)
-
-            if gps_output[:6] == "$CANDY":
-                candy_data = gps_output.split(",")
-                noise = candy_data[2]
-                flux = candy_data[3]
-                printer_raw.write(('{:05}'.format(index_raw) + "," + gps_output + "," + "Candy_detector_data" + "\n"))
-                printer_candy.write('{:05}'.format(index_candy) + "," + time + "," + latitude + "," + longtitude + "," + altitude + "," + gps_output + "\n")
-                print "Candy detector data logged\n"
-                index_candy += 1
-                index_raw += 1
-           
             else:
-                sentence = make_sentence(gps_output, True)
-                
-                if sentence == "parse_error": # If sentence couldn't be parsed, it is not uploaded and is logged only to raw logfile
-                    print "Can't parse data - sentence not sent\n"
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Parse_error" + "\n")
-                    index_raw += 1
-                elif sentence == "checksum_error": # Sentence is not uploaded, if it didn't pass the checksum, but is still logged
-                    print "Checksum error - sentence not sent\n"
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Checksum_error" + "\n")
-                    index_raw += 1
-                elif sentence == "gps_no_fix": # If NMEA data was uncomplete (without GPS fix), sentence it is not uploaded and is logged only to raw logfile
-                    print "Uncomplete NMEA data (no GPS fix) - sentence not sent\n"
-                    printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "No_GPS_fix" + "\n")
-                    index_raw += 1
-                else:
-                    split_sentence = sentence.split(",")
-                    time = split_sentence[1]
-                    latitude = split_sentence[2]
-                    longtitude = split_sentence[3]
-                    altitude = split_sentence[4] 
+                param = {
+                    #'timestamp': datetime.fromtimestamp(data['time']).strftime("%H:%M:%S"),
+                    'timestamp': datetime.utcnow().strftime("%H:%M:%S"),
+                    'lat': 50.12,
+                    'lon': 14.5,
+                    'altitude': 200.34,
+                    'num_sats': 0,
+                    'fix': -1,
+                    'temperature': 10,
+                }
 
-                    print("Sending: " + sentence.rstrip('\n'))    # Prints sentence uploading to DB to the terminal              
+            sentence = make_sentence(param, True)
+            print("Sending: " + sentence)    # Prints sentence uploading to DB to the terminal              
+            
+            for x in range(0,4):
+                try:
+
+                    addr = "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence.encode())).hexdigest()
+                    body = json.dumps(make_data(sentence, callsign))
                     
-                    for x in range(0,4):
-                        try:
-                            c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
-                            c.request(
-                                "PUT",
-                                "/habitat/_design/payload_telemetry/_update/add_listener/%s" % sha256(b64encode(sentence)).hexdigest(),
-                                json.dumps(make_data(sentence, callsign)),  # BODY
-                                {"Content-Type": "application/json"}  # HEADERS
-                                )
+                    c = httplib.HTTPConnection("habitat.habhub.org") # DB uploader
+                    c.request(
+                        "PUT",
+                        addr,
+                        body.encode(),  # BODY
+                        {
+                            "Content-Type": "application/json",
+                            'Accept': "application/json"
+                        }
+                    )
 
-                            response = c.getresponse() # Prints response from DB
+                    response = c.getresponse() # Prints response from DB
 
-                            print "Status:", response.status, response.reason, "\n" # Prints response from DB and creates log entry
-                            printer.write('{:05}'.format(index) + "," + gps_output + "," + str(response.reason) + "\n")
-                            printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + str(response.reason) + "\n")
-                            index_raw += 1
-                            index += 1
-                            break
-
-                        except Exception:
-                            if x < 3:
-                                print "No internet connection. Repeating upload... [" + str(x + 1) +"/3]" # In case of no internet connection repeats upload three times
-                            else:
-                                print "Error! No internet connection - sentence not sent\n" # If after three tries is sentence not uploaded, create log entry and continue
-                                printer.write('{:05}'.format(index) + "," + gps_output + "," + "Upload_error" + "\n")
-                                printer_raw.write('{:05}'.format(index_raw) + "," + gps_output + "," + "Upload_error" + "\n")
-                                index_raw += 1
-                                index += 1
+                except Exception as e:
+                    if x < 3:
+                        print("No internet connection. Repeating upload... [" + str(x + 1) +"/3]") # In case of no internet connection repeats upload three times
+                        print(e)
+                    else:
+                        print("Error! No internet connection - sentence not sent") # If after three tries is sentence not uploaded, create log entry and continue
+                        index_raw += 1
+                        index += 1
                 
-        except serial.SerialException: # Close safely in case of port disconnection
-            print "Error! Device disconnected. Reconnect device and restart program.\n"
-            break
+        except Exception as e: # Close safely in case of port disconnection
+            print("Error:", e)
+
 
 except KeyboardInterrupt: # Close safely with "CTRL + C"
-    print "_Program closed\n"
-
-printer.close()
-printer_raw.close()
-printer_candy.close()
+    print("_Program closed\n")

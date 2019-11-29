@@ -20,8 +20,8 @@ The logfile looks like following:
 
 The software needs [Pynmea2](https://github.com/Knio/pynmea2) library which could be installed by following command: 
 
-    pip install pynmea2 crc16
-
+    pip install pymavlnik crc16 serial ttn 
+    
 ### Program launch
 
 The software needs a hardware radio modem.  The modem is accessed trought an serial port "/dev/ttyUSB0" for example. Then the code could be executed by runnig following command: 
