@@ -1,23 +1,17 @@
 #!/usr/bin/env python
 import sys
-#from http import client
 import httplib
 import json
 import datetime
-#import pynmea2
-#import urllib
-#import urllib.request
-from pymavlink import mavutil
+
 import time
 import crc16
-import serial
+
 from base64 import b64encode
 from hashlib import sha256
 from datetime import datetime
 import Queue
 from threading import Thread
-import ttn
-import iso8601
 
 
 ###################################################################
@@ -40,7 +34,7 @@ def make_sentence(sentence, checksum_bool): # Function which takes NMEA sentence
 
 def make_data(sentence, callsign): # Creates data in format suitable for upload to DB
     date = datetime.utcnow().isoformat("T") + "Z"
-    sentence = b64encode(sentence) 
+    sentence = b64encode(sentence)
     data = {
         "type": "payload_telemetry",
         "data": {
@@ -142,9 +136,15 @@ def start_lora_rx(qu):
 
 
 if sys.argv[1] == 'lora':
+    import ttn
+    import iso8601
+
     print("Starting LORA")
     reciever = start_lora_rx
 else:
+    import serial
+    from pymavlink import mavutil
+
     reciever = start_mavlink_rx
 
 worker = Thread(target=reciever, args=(q,))
