@@ -82,6 +82,7 @@ def start_mavlink_rx(q):
             'temp': 0
 
         }
+    f=open("log_{}_mavlink.txt".format(callsign), "a+")
 
     while True:
         try:
@@ -93,6 +94,7 @@ def start_mavlink_rx(q):
                 payload['alt'] = data['alt']/10e2
                 payload['time'] = data['time_usec']
                 payload['num_sats'] = data['satellites_visible']
+                f.write(payload)
 
             # temperature
             #if data['mavpackettype'] == "":
@@ -110,20 +112,26 @@ def start_lora_rx(qu):
     app_id = "throwaway324s-test-network"
     access_key = "ttn-account-v2.zyaSIrWA1yJ_RdEgp7yDPhvTAH3-qEstQi6MMVrhzwo"
 
+    f=open("log_{}_lora.txt".format(callsign), "a+")
+
     def uplink_callback(msg, client):
         try:
             print "New LoRa message:", msg.metadata.time, msg.counter, msg.payload_fields
             #qu.put(msg)
             fields = msg.payload_fields
             ts = iso8601.parse_date(msg.metadata.time)
-            qu.put({
+            data = {
                 "lat": fields.lat,
                 "lon": fields.lon,
                 "alt": float(fields.alt_m),
                 "time": int((ts.utcnow()-datetime(1970,1,1)).total_seconds()*1000000),
                 "source": "lora"
-            })
+            }
+            qu.put(data)
             q.task_done()
+
+            f.write(data)
+
         except Exception as e:
             print("task error", e)
 
