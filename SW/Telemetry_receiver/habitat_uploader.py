@@ -16,12 +16,14 @@ from hashlib import sha256
 from datetime import datetime
 import Queue
 from threading import Thread
+import ttn
+import iso8601
 
 
 ###################################################################
 
 callsign = "LetFik5"
-virtual = True;
+virtual = False;
 
 ###################################################################
 
@@ -66,39 +68,90 @@ def get_date(format_bool):
         return datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 if len(sys.argv) < 3: # Terminate program, if run without defining port as an argument
-    print "Usage: python %s [recv port] [receiver callsign]" % sys.argv[0]
+    print "Usage: python %s [recv port | lora] [receiver callsign]" % sys.argv[0]
     sys.exit()
 
-
 date = get_date(False)
-
 q = Queue.Queue(10)
 
-def get_mavlink(q):
+def start_mavlink_rx(q):
     mav = mavutil.mavlink_connection(sys.argv[1], baud=57600, source_system=255)
+
+    payload = {
+            'lat': 0,
+            'lon': 0,
+            'alt': 0,
+            'fix': 0,
+            'time': 0,
+            'source': 'mavlink',
+            'num_sats': -1,
+            'temp': 0
+
+        }
 
     while True:
         try:
             data = mav.recv_match(blocking=True)
-            #print(data)
             data = data.to_dict()
             if data['mavpackettype'] == "GPS_RAW_INT":
-                #print(data)
-                q.put({
-                    'lat': data['lat']/10e6,
-                    'lon': data['lon']/10e6,
-                    'alt': data['alt']/10e2,
-                    'time': data['time_usec'],
-                    'source': 'mavlink',
-                    'num_sats': data['satellites_visible']
-                })
+                payload['lat'] = data['lat']/10e6
+                payload['lon'] = data['lon']/10e6
+                payload['alt'] = data['alt']/10e2
+                payload['time'] = data['time_usec']
+                payload['num_sats'] = data['satellites_visible']
+
+            # temperature
+            #if data['mavpackettype'] == "":
+            #    payload['temp'] = data['temperature']
+
+            if data['mavpackettype'] in ['GPS_RAW_INT']:
+                q.put(payload)
                 q.task_done()
+
         except Exception as e:
             print("task error:", e)
 
-worker = Thread(target=get_mavlink, args=(q))
+
+def start_lora_rx(qu):
+    app_id = "throwaway324s-test-network"
+    access_key = "ttn-account-v2.zyaSIrWA1yJ_RdEgp7yDPhvTAH3-qEstQi6MMVrhzwo"
+
+    def uplink_callback(msg, client):
+        try:
+            print "New LoRa message:", msg.metadata.time, msg.counter, msg.payload_fields
+            #qu.put(msg)
+            fields = msg.payload_fields
+            ts = iso8601.parse_date(msg.metadata.time)
+            qu.put({
+                "lat": fields.lat,
+                "lon": fields.lon,
+                "alt": float(fields.alt_m),
+                "time": int((ts.utcnow()-datetime(1970,1,1)).total_seconds()*1000000),
+                "source": "lora"
+            })
+            q.task_done()
+        except Exception as e:
+            print("task error", e)
+
+    handler = ttn.HandlerClient(app_id, access_key)
+
+    # using mqtt client
+    mqtt_client = handler.data()
+    mqtt_client.set_uplink_callback(uplink_callback)
+    mqtt_client.connect()
+
+
+if sys.argv[1] == 'lora':
+    print("Starting LORA")
+    reciever = start_lora_rx
+else:
+    reciever = start_mavlink_rx
+
+worker = Thread(target=reciever, args=(q,))
 worker.setDaemon(True)
 worker.start()
+
+
 
 
 try:
@@ -114,8 +167,8 @@ try:
                     'lon': data['lon'],
                     'altitude': data['alt'],
                     'num_sats': data.get('num_sats', -1),
-                    'fix': -1,
-                    'temperature': 10,
+                    'fix': data.get('fix', -1),
+                    'temperature': data.get('temp', -999),
                 }
 
             else:
