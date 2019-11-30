@@ -10,7 +10,7 @@ Recognised telemetry packets are processed parsed an uploaded to http://habhub.o
 
 The software needs [Pynmea2](https://github.com/Knio/pynmea2) library which could be installed by following command: 
 
-    pip install pymavlnik crc16 serial ttn 
+    pip install pymavlink crc16 serial ttn 
 
 For usage with QGC parallelly, you must install [Mavlink-routered](https://github.com/intel/mavlink-router)
 
