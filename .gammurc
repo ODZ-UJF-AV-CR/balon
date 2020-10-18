@@ -1,4 +1,0 @@
-[gammu]
-
-device = /dev/ttyUSB0
-connection = at115200
