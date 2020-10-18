@@ -1,5 +1,0 @@
-#!/bin/sh
-# Requires the key to be setup correctly
-
-/usr/sbin/ntpdate pool.ntp.org
-/usr/bin/ssh -i /home/odroid/.ssh/id_balon -f -n -R 8122:localhost:22 balon@bobr.ujf.cas.cz sleep 240
