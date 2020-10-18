@@ -11,3 +11,12 @@ The goal of the experiment was verification of use stratospheric sounding balloo
 ![Block diagram](doc/img/block_schematics.png)
 
 The electronics hardware is made from [MLAB](http://www.mlab.cz/) open-source components.
+
+## Changes from the last flight
+
+  * Use of LoRa instead of Sigfox
+  * Integration of autopilot ecosystem (PX4)
+  * New SiK telemetry radio modem
+  * New AIRSDOS detectors  (CF, FF).
+ 
+ 
