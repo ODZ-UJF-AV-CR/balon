@@ -1,0 +1,6 @@
+[submodule "doc/LoRa-Node"]
+	path = doc/LoRa-Node
+	url = https://github.com/cernohorsky/LoRa-Node.git
+[submodule "doc/LoRa-Node-Solar"]
+	path = doc/LoRa-Node-Solar
+	url = https://github.com/cernohorsky/LoRa-Node-Solar.git
