@@ -4,3 +4,6 @@
 [submodule "doc/LoRa-Node-Solar"]
 	path = doc/LoRa-Node-Solar
 	url = https://github.com/cernohorsky/LoRa-Node-Solar.git
+[submodule "CAD/src/telemetry_helix/gondola_helix"]
+	path = CAD/src/telemetry_helix/gondola_helix
+	url = https://github.com/kaklik/QFH-Antenna.git
