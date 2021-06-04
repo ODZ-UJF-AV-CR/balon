@@ -29,8 +29,8 @@ High-altitude balloon [flight FIK-4](https://github.com/ODZ-UJF-AV-CR/FIK-4-Kiru
 
 ### FIK-6
 
-Avionics almost completely basesed on FMUv5 hardware. The PX4 firmware was extended by LoRa module and the first prototype of [TFSIK telemetry modem](https://github.com/ThunderFly-aerospace/TFSIK01). 
-There are also an improved versions of AIRDOS, measuring devices. 
+Avionics almost completely based on FMUv5 hardware. The PX4 firmware was extended by LoRa module and the first prototype of [TFSIK telemetry modem](https://github.com/ThunderFly-aerospace/TFSIK01). 
+There are also an improved versions of AIRDOS, measuring devices. The documentation is in separate [FIK-6 repository](https://github.com/ODZ-UJF-AV-CR/FIK-6). 
 
 ## Description 
 
