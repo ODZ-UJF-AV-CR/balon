@@ -15,6 +15,8 @@ This repository content
 This repository with slight modifications contained in commits. [Annoucement on NPI website](http://www.ujf.cas.cz/cs/novinky/Stratosfericky-balon-let-Fik-2/)
 [Description of the flight](http://www.ujf.cas.cz/export/sites/ujf/.content/files/novinky/Stratosfericky-balon-let-Fik-2.pdf) - Czech Only
 
+  * [Novinky.cz](https://www.novinky.cz/veda-skoly/clanek/s-vyvojem-balonu-pro-vyzkum-kosmickeho-zareni-pomahali-studenti-cvut-40027989)
+
 ### FIK-3
 
 Outsourced flight. [Facebook launch video](https://www.facebook.com/watch/?v=215540205671872).
