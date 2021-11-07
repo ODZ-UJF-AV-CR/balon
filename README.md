@@ -17,7 +17,7 @@ This repository with slight modifications contained in commits. [Annoucement on 
 
 ### FIK-3
 
-Outsourced flight as rideshare payload. Flight was announced by [twitter channel](https://twitter.com/NebeskyK?lang=en).
+Outsourced flight. [Facebook launch video](https://www.facebook.com/watch/?v=215540205671872).
 
 ### FIK-4
 
