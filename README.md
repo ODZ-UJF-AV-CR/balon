@@ -6,6 +6,10 @@
 
 There are [multiple FIK flights](http://www.ujf.cas.cz/cs/oddeleni/oddeleni-dozimetrie-zareni/lety-fik/)
 
+![Review of FIK flights](doc/FIK_flights.png)
+
+Green to red colors code the success of used technology. 
+
 ### FIK-1
 
 This repository content
